@@ -19,10 +19,10 @@ using namespace std;
  * @param device The device ID on the bus.
  */
 I2CDevice::I2CDevice(unsigned int bus, unsigned int device) {
-	this->file=-1;
-	this->bus = bus;
-	this->device = device;
-	this->open();
+	file=-1;
+	bus = bus;
+	device = device;
+	open();
 }
 
 /**
@@ -31,14 +31,14 @@ I2CDevice::I2CDevice(unsigned int bus, unsigned int device) {
  */
 int I2CDevice::open(){
    string name;
-   if(this->bus==0) name = I2C_0;
+   if(bus==0) name = I2C_0;
    else name = I2C_1;
 
-   if((this->file=::open(name.c_str(), O_RDWR)) < 0){
+   if((file=::open(name.c_str(), O_RDWR)) < 0){
       perror("I2C: failed to open the bus\n");
 	  return 1;
    }
-   if(ioctl(this->file, I2C_SLAVE, this->device) < 0){
+   if(ioctl(file, I2C_SLAVE, device) < 0){
       perror("I2C: Failed to connect to the device\n");
 	  return 1;
    }
@@ -56,7 +56,7 @@ int I2CDevice::writeRegister(unsigned int registerAddress, unsigned char value){
    unsigned char buffer[2];
    buffer[0] = registerAddress;
    buffer[1] = value;
-   if(::write(this->file, buffer, 2)!=2){
+   if(::write(file, buffer, 2)!=2){
       perror("I2C: Failed write to the device\n");
       return 1;
    }
@@ -72,7 +72,7 @@ int I2CDevice::writeRegister(unsigned int registerAddress, unsigned char value){
 int I2CDevice::write(unsigned char value){
    unsigned char buffer[1];
    buffer[0]=value;
-   if (::write(this->file, buffer, 1)!=1){
+   if (::write(file, buffer, 1)!=1){
       perror("I2C: Failed to write to the device\n");
       return 1;
    }
@@ -85,9 +85,9 @@ int I2CDevice::write(unsigned char value){
  * @return the byte value at the register address.
  */
 unsigned char I2CDevice::readRegister(unsigned int registerAddress){
-   this->write(registerAddress);
+   write(registerAddress);
    unsigned char buffer[1];
-   if(::read(this->file, buffer, 1)!=1){
+   if(::read(file, buffer, 1)!=1){
       perror("I2C: Failed to read in the value.\n");
       return 1;
    }
@@ -103,9 +103,9 @@ unsigned char I2CDevice::readRegister(unsigned int registerAddress){
  * @return a pointer of type unsigned char* that points to the first element in the block of registers
  */
 unsigned char* I2CDevice::readRegisters(unsigned int number, unsigned int fromAddress){
-	this->write(fromAddress);
+	write(fromAddress);
 	unsigned char* data = new unsigned char[number];
-    if(::read(this->file, data, number)!=(int)number){
+    if(::read(file, data, number)!=(int)number){
        perror("IC2: Failed to read in the full buffer.\n");
 	   return NULL;
     }
@@ -122,7 +122,7 @@ unsigned char* I2CDevice::readRegisters(unsigned int number, unsigned int fromAd
 
 void I2CDevice::debugDumpRegisters(unsigned int number){
 	cout << "Dumping Registers for Debug Purposes:" << endl;
-	unsigned char *registers = this->readRegisters(number);
+	unsigned char *registers = readRegisters(number);
 	for(int i=0; i<(int)number; i++){
 		cout << HEX(*(registers+i)) << " ";
 		if (i%16==15) cout << endl;
@@ -134,13 +134,13 @@ void I2CDevice::debugDumpRegisters(unsigned int number){
  * Close the file handles and sets a temporary state to -1.
  */
 void I2CDevice::close(){
-	::close(this->file);
-	this->file = -1;
+	::close(file);
+	file = -1;
 }
 
 /**
  * Closes the file on destruction, provided that it has not already been closed.
  */
 I2CDevice::~I2CDevice() {
-	if(file!=-1) this->close();
+	if(file!=-1) close();
 }

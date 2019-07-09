@@ -29,7 +29,7 @@ public:
 	virtual GPIO_VALUE getValue();
 	virtual int  setActiveLow(bool isLow=true);  // low=1, high=0
 	virtual int  setActiveHigh();                // default state
-	virtual void setDebounceTime(int time) { this->debounceTime = time; }
+	virtual void setDebounceTime(int time) { debounceTime = time; }
 
 	// Advanced output: faster by keeping the stream open (~20x)
 	virtual int  streamOpen();
@@ -37,15 +37,15 @@ public:
 	virtual int  streamClose();
 	virtual int  toggleOutput(int time); // thread invert output every X ms
 	virtual int  toggleOutput(int numberOfTimes, int time);
-	virtual void changeToggleTime(int time) { this->togglePeriod = time; }
-	virtual void toggleCancel() { this->threadRunning = false; }
+	virtual void changeToggleTime(int time) { togglePeriod = time; }
+	virtual void toggleCancel() { threadRunning = false; }
 
 	// Advanced input: detect input edges -- threaded and non-threaded
 	virtual int  setEdgeType(GPIO_EDGE);
 	virtual GPIO_EDGE getEdgeType();
 	virtual int  waitForEdge();        // waits until button is pressed
 	virtual int  waitForEdge(CallbackType callback); // threaded callback
-	virtual void waitForEdgeCancel() { this->threadRunning = false; }
+	virtual void waitForEdgeCancel() { threadRunning = false; }
 
 	virtual ~GPIO();  // destructor unexports the pin
 private:

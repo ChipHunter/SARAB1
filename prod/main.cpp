@@ -4,7 +4,6 @@
 #include<iostream>
 #include<unistd.h>  // for the usleep() function
 #include"GPIO.h"
-using namespace exploringRPi;
 using namespace std;
 
 int main(){
