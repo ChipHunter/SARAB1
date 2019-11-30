@@ -29,6 +29,7 @@ set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${GCC_PTHREAD_FLAGS}")
 include_directories(comp/GPIO/include)
 include_directories(comp/SPI/include)
 include_directories(comp/I2C/include)
+include_directories(plat/include)
  
 # Add source files 
 file(GLOB SOURCES comp/GPIO/src/*.cpp ${SOURCES})

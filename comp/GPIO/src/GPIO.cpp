@@ -1,249 +1,343 @@
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <errno.h>
+#include <stdlib.h>
+
 #include "GPIO.h"
-#include<iostream>
-#include<fstream>
-#include<string>
-#include<sstream>
-#include<cstdlib>
-#include<cstdio>
-#include<fcntl.h>
-#include<unistd.h>
-#include<sys/epoll.h>
-#include<pthread.h>
-using namespace std;
 
+/*********************************************************************/
 
-/**
- *
- * @param number The GPIO number for the RPi
- */
-GPIO::GPIO(int number) {
-	number = number;
-	debounceTime = 0;
-	togglePeriod=100;
-	toggleNumber=-1; //infinite number
-	callbackFunction = NULL;
-	threadRunning = false;
-
-	ostringstream s;
-	s << "gpio" << number;
-	name = string(s.str());
-	path = GPIO_PATH + name + "/";
+GPIO::GPIO(int pinNumber) {
+	
+  gpioPinNumber = pinNumber; 
+  
 	exportGPIO();
-	// need to give Linux time to set up the sysfs structure
-	usleep(250000); // 250ms delay
+  
+  // need to give Linux time to set up the sysfs structure	
+  usleep(250000); // 250ms delay
+  
+  snprintf(gpioPathComplete, sizeof(gpioPathComplete), "%sgpio%d/", 
+           GPIO_UPPER_DIR, gpioPinNumber);
+  
+  /* create path to all the needed files */
+
+  snprintf(pathToDirectionFile, sizeof(pathToDirectionFile), "%sdirection", 
+           gpioPathComplete);  
+	
+  snprintf(pathToValueFile, sizeof(pathToValueFile), "%svalue", 
+           gpioPathComplete);  
+
+	snprintf(pathToEdgeFile, sizeof(pathToEdgeFile), "%sedge", 
+           gpioPathComplete);  
+  
+
+	snprintf(pathToActiveLowFile, sizeof(pathToActiveLowFile), "%sactive_low", 
+           gpioPathComplete);  
+  
 }
 
-int GPIO::write(string path, string filename, string value){
-   ofstream fs;
-   fs.open((path + filename).c_str());
-   if (!fs.is_open()){
-	   perror("GPIO: write failed to open file ");
-	   return -1;
+/*********************************************************************/
+
+void GPIO::writeGPIO(int fd, const char* value)
+{
+  
+  if (write(fd, value, strlen(value)) != strlen(value)) {
+    printf("error writing to the file: %s \n", strerror(errno));
+  }
+
+}
+
+/*********************************************************************/
+
+void GPIO::writeGPIO(int fd, int value){
+  
+  char str[4] = {0};
+
+  snprintf(str, sizeof(str), "%d", value);
+
+  if (write(fd, str, sizeof(str)) != sizeof(str)) {
+    printf("error writing to the file: %s \n", strerror(errno));
+  }
+
+}
+
+/*********************************************************************/
+
+void GPIO::readGPIO(int fd, char str[], int len){
+
+  int ret = read(fd, str, len);  
+  if (ret < 0) {
+    printf("error reading from the file: %s \n", strerror(errno));
+  }
+
+}
+/*********************************************************************/
+
+void GPIO::exportGPIO(){
+  
+  char filePath[strlen(GPIO_UPPER_DIR) + strlen("export") + 1] = {0};
+  
+  snprintf(filePath, sizeof(filePath), "%sexport", GPIO_UPPER_DIR);  
+ 
+  int fd = open(filePath, O_WRONLY, O_TRUNC);
+  if (fd == -1) {
+    printf("error opening the file: %s\n", strerror(errno));
+  } else {
+    writeGPIO(fd, gpioPinNumber);
+  }
+
+  if (close(fd) == -1) {
+    printf("error closing the file: %s \n", strerror(errno));
+  }
+
+}
+
+/*********************************************************************/
+
+void GPIO::unexportGPIO(){
+  
+  char filePath[strlen(GPIO_UPPER_DIR) + strlen("unexport") + 1] = {0};
+  
+  snprintf(filePath, sizeof(filePath), "%sunexport", GPIO_UPPER_DIR);  
+
+  int fd = open(filePath, O_WRONLY, O_TRUNC);
+  if (fd == -1) {
+    printf("error opening the file: %s\n", strerror(errno));
+  } else {
+    writeGPIO(fd, gpioPinNumber);
+  }
+
+  if (close(fd) == -1) {
+    printf("error closing the file: %s \n", strerror(errno));
+  }
+}
+
+/*********************************************************************/
+
+GPIO_DIRECTION GPIO::getDirection() {
+	
+  char str[4] = {0};
+  GPIO_DIRECTION res = INPUT;
+  
+  int fd = open(pathToDirectionFile, O_RDONLY);
+  if (fd == -1) {
+    printf("error opening the file: %s \n", strerror(errno));
+  }
+
+  readGPIO(fd, str, 4);
+  
+  if (strncmp(str, "in", 2) == 0) {
+    res = INPUT;
+  } else {
+    res = OUTPUT;
+  }
+
+  if (close(fd) == -1) {
+    printf("error closing the file: %s \n", strerror(errno));
+  } 
+
+  return res;
+
+}
+
+/*********************************************************************/
+
+void GPIO::setDirection(GPIO_DIRECTION dir)
+{
+  
+  int fd = open(pathToDirectionFile, O_WRONLY);
+  if (fd == -1) {
+    printf("error opening the file: %s \n", strerror(errno));
+  }
+
+  switch(dir){
+  case INPUT: 
+    writeGPIO(fd, "in");
+    break;
+  case OUTPUT:
+    writeGPIO(fd, "out");
+    break;
    }
-   fs << value;
-   fs.close();
-   return 0;
+   
+ if (close(fd) == -1) {
+  printf("error closing the file: %s \n", strerror(errno));
+ } 
+
 }
 
-string GPIO::read(string path, string filename){
-   ifstream fs;
-   fs.open((path + filename).c_str());
-   if (!fs.is_open()){
-	   perror("GPIO: read failed to open file ");
-    }
-   string input;
-   getline(fs,input);
-   fs.close();
-   return input;
+/*********************************************************************/
+
+void GPIO::setValue(GPIO_VALUE value) {
+  
+  int fd = open(pathToValueFile, O_WRONLY);
+  if (fd == -1) {
+    printf("error opening the file: %s \n", strerror(errno));
+  }
+
+  switch(value){
+  case HIGH: 
+    writeGPIO(fd, 1);
+    break;
+  case LOW: 
+    writeGPIO(fd, 0);
+    break;
+  }
+   
+  if (close(fd) == -1) {
+    printf("error closing the file: %s \n", strerror(errno));
+  } 
+
 }
 
-int GPIO::write(string path, string filename, int value){
-   stringstream s;
-   s << value;
-   return write(path,filename,s.str());
-}
+/*********************************************************************/
 
-int GPIO::exportGPIO(){
-   return write(GPIO_PATH, "export", number);
-}
+void GPIO::setEdgeType(GPIO_EDGE value) {
+  
+  int fd = open(pathToEdgeFile, O_WRONLY);
+  if (fd == -1) {
+    printf("error opening the file: %s \n", strerror(errno));
+  }
 
-int GPIO::unexportGPIO(){
-   return write(GPIO_PATH, "unexport", number);
-}
-
-int GPIO::setDirection(GPIO_DIRECTION dir){
-   switch(dir){
-   case INPUT: return write(path, "direction", "in");
+  switch(value) {
+    case NONE: 
+      writeGPIO(fd, "none");
       break;
-   case OUTPUT:return write(path, "direction", "out");
+    case RISING:
+      writeGPIO(fd, "rising");
       break;
-   }
-   return -1;
-}
-
-int GPIO::setValue(GPIO_VALUE value){
-   switch(value){
-   case HIGH: return write(path, "value", "1");
+   case FALLING:  
+      writeGPIO(fd, "falling");
       break;
-   case LOW: return write(path, "value", "0");
+   case BOTH:  
+      writeGPIO(fd, "both");
       break;
-   }
-   return -1;
+  }
+
+  if (close(fd) == -1) {
+    printf("error closing the file: %s \n", strerror(errno));
+  } 
+
 }
 
-int GPIO::setEdgeType(GPIO_EDGE value){
-   switch(value){
-   case NONE: return write(path, "edge", "none");
-      break;
-   case RISING: return write(path, "edge", "rising");
-      break;
-   case FALLING: return write(path, "edge", "falling");
-      break;
-   case BOTH: return write(path, "edge", "both");
-      break;
-   }
-   return -1;
+/*********************************************************************/
+
+void GPIO::setActiveLow(bool isLow){
+
+  int fd = open(pathToActiveLowFile, O_WRONLY);
+  if (fd == -1) {
+    printf("error opening the file: %s \n", strerror(errno));
+  }
+
+  if(isLow) {
+    writeGPIO(fd, 1);
+  } else {
+    writeGPIO(fd, 0);
+  }
+
+  if (close(fd) == -1) {
+    printf("error closing the file: %s \n", strerror(errno));
+  } 
+
 }
 
-int GPIO::setActiveLow(bool isLow){
-   if(isLow) return write(path, "active_low", "1");
-   else return write(path, "active_low", "0");
+/*********************************************************************/
+
+void GPIO::setActiveHigh() {
+   
+  setActiveLow(false);
+
 }
 
-int GPIO::setActiveHigh(){
-   return setActiveLow(false);
+/*********************************************************************/
+
+int GPIO::getActiveLow() {
+
+  int fd = open(pathToActiveLowFile, O_RDONLY);
+  if (fd == -1) {
+    printf("error opening the file: %s \n", strerror(errno));
+  }
+
+  int res = 0;
+	int len = 2;
+	char str[len] = {0};
+
+  readGPIO(fd, str, len);
+	
+	res = atoi(str);
+
+  if (close(fd) == -1) {
+    printf("error closing the file: %s \n", strerror(errno));
+  } 
+
+  return res;
+
 }
 
-GPIO_VALUE GPIO::getValue(){
-	string input = read(path, "value");
-	if (input == "0") return LOW;
-	else return HIGH;
+/*********************************************************************/
+
+GPIO_VALUE GPIO::getValue() {
+	
+  int fd = open(pathToValueFile, O_RDONLY);
+  if (fd == -1) {
+    printf("error opening the file: %s \n", strerror(errno));
+  }
+  char str[2] = {0};
+  GPIO_VALUE res = LOW;
+
+  readGPIO(fd, str, 2);
+
+	if (strncmp(str, "0", 1) == 0) {
+    res = LOW;
+  } else { 
+    res = HIGH;
+  }
+   
+  if (close(fd) == -1) {
+    printf("error closing the file: %s \n", strerror(errno));
+  } 
+
+  return res;
+
 }
 
-GPIO_DIRECTION GPIO::getDirection(){
-	string input = read(path, "direction");
-	if (input == "in") return INPUT;
-	else return OUTPUT;
-}
+/*********************************************************************/
 
-GPIO_EDGE GPIO::getEdgeType(){
-	string input = read(path, "edge");
-	if (input == "rising") return RISING;
-	else if (input == "falling") return FALLING;
-	else if (input == "both") return BOTH;
-	else return NONE;
-}
+GPIO_EDGE GPIO::getEdgeType() {
 
-int GPIO::streamOpen(){
-	stream.open((path + "value").c_str());
-	return 0;
-}
-int GPIO::streamWrite(GPIO_VALUE value){
-	stream << value << std::flush;
-	return 0;
-}
-int GPIO::streamClose(){
-	stream.close();
-	return 0;
-}
+	char str[8] = {0};
+  GPIO_EDGE res = NONE;
 
-int GPIO::toggleOutput(){
-	setDirection(OUTPUT);
-	if ((bool) getValue()) setValue(LOW);
-	else setValue(HIGH);
-    return 0;
-}
+  int fd = open(pathToEdgeFile, O_RDONLY);
+  if (fd == -1) {
+    printf("error opening the file: %s \n", strerror(errno));
+  }
+  readGPIO(fd, str, 8);
 
-int GPIO::toggleOutput(int time){ return toggleOutput(-1, time); }
-int GPIO::toggleOutput(int numberOfTimes, int time){
-	setDirection(OUTPUT);
-	toggleNumber = numberOfTimes;
-	togglePeriod = time;
-	threadRunning = true;
-    if(pthread_create(&thread, NULL, &threadedToggle, static_cast<void*>(this))){
-    	perror("GPIO: Failed to create the toggle thread");
-    	threadRunning = false;
-    	return -1;
-    }
-    return 0;
-}
-
-// This thread function is a friend function of the class
-void* threadedToggle(void *value){
-	GPIO *gpio = static_cast<GPIO*>(value);
-	bool isHigh = (bool) gpio->getValue(); //find current value
-	while(gpio->threadRunning){
-		if (isHigh)	gpio->setValue(HIGH);
-		else gpio->setValue(LOW);
-		usleep(gpio->togglePeriod * 500);
-		isHigh=!isHigh;
-		if(gpio->toggleNumber>0) gpio->toggleNumber--;
-		if(gpio->toggleNumber==0) gpio->threadRunning=false;
+  if (strncmp(str, "rising", 6) == 0) {
+    res = RISING;
+  } else if(strncmp(str, "falling", 7) == 0){
+    res = FALLING;
+  } else if(strncmp(str, "both", 4) == 0){
+		res = BOTH;
+	} else {
+		res = NONE;
 	}
-	return 0;
+  
+  if (close(fd) == -1) {
+    printf("error closing the file: %s \n", strerror(errno));
+  } 
+	
+  return res;
 }
 
-// Blocking Poll - based on the epoll socket code in the epoll man page
-int GPIO::waitForEdge(){
-	setDirection(INPUT); // must be an input pin to poll its value
-	int fd, i, epollfd, count=0;
-	struct epoll_event ev;
-	epollfd = epoll_create(1);
-    if (epollfd == -1) {
-	   perror("GPIO: Failed to create epollfd");
-	   return -1;
-    }
-    if ((fd = open((path + "value").c_str(), O_RDONLY | O_NONBLOCK)) == -1) {
-       perror("GPIO: Failed to open file");
-       return -1;
-    }
-
-    //ev.events = read operation | edge triggered | urgent data
-    ev.events = EPOLLIN | EPOLLET | EPOLLPRI;
-    ev.data.fd = fd;  // attach the file file descriptor
-
-    //Register the file descriptor on the epoll instance, see: man epoll_ctl
-    if (epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &ev) == -1) {
-       perror("GPIO: Failed to add control interface");
-       return -1;
-    }
-	while(count<=1){  // ignore the first trigger
-		i = epoll_wait(epollfd, &ev, 1, -1);
-		if (i==-1){
-			perror("GPIO: Poll Wait fail");
-			count=5; // terminate loop
-		}
-		else {
-			count++; // count the triggers up
-		}
-	}
-    close(fd);
-    if (count==5) return -1;
-	return 0;
-}
-
-// This thread function is a friend function of the class
-void* threadedPoll(void *value){
-	GPIO *gpio = static_cast<GPIO*>(value);
-	while(gpio->threadRunning){
-		gpio->callbackFunction(gpio->waitForEdge());
-		usleep(gpio->debounceTime * 1000);
-	}
-	return 0;
-}
-
-int GPIO::waitForEdge(CallbackType callback){
-	threadRunning = true;
-	callbackFunction = callback;
-    // create the thread, pass the reference, address of the function and data
-    if(pthread_create(&thread, NULL, &threadedPoll, static_cast<void*>(this))){
-    	perror("GPIO: Failed to create the poll thread");
-    	threadRunning = false;
-    	return -1;
-    }
-    return 0;
-}
+/*********************************************************************/
 
 GPIO::~GPIO() {
-	unexportGPIO();
+  
+  unexportGPIO();
+
 }
+
+/*********************************************************************/
