@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 3.7.2)
-project (ROBO1)
+project (SARAB1)
 
 # cross-compiling configs
 set(CMAKE_SYSTEM_NAME Linux)
@@ -26,15 +26,14 @@ set(GCC_PTHREAD_FLAGS "-pthread")
 set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${GCC_PTHREAD_FLAGS}")
 
 #Bring the headers into the project
-include_directories(comp/GPIO/include)
-include_directories(comp/SPI/include)
-include_directories(comp/I2C/include)
-include_directories(plat/include)
+include_directories(plat/GPIO/include)
+include_directories(plat/SPI/include)
+include_directories(plat/I2C/include)
  
 # Add source files 
-file(GLOB SOURCES comp/GPIO/src/*.cpp ${SOURCES})
-file(GLOB SOURCES comp/SPI/src/*.cpp ${SOURCES})
-file(GLOB SOURCES comp/I2C/src/*.cpp ${SOURCES})
+file(GLOB SOURCES plat/GPIO/src/*.cpp ${SOURCES})
+file(GLOB SOURCES plat/SPI/src/*.cpp ${SOURCES})
+file(GLOB SOURCES plat/I2C/src/*.cpp ${SOURCES})
 file(GLOB SOURCES prod/*.cpp ${SOURCES})
 
-add_executable(robo1 ${SOURCES})
+add_executable(sarab1 ${SOURCES})

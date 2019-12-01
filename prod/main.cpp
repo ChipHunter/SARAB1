@@ -1,5 +1,4 @@
 #include "GPIO.h"
-#include "typeAliases.h"
 #include <unistd.h>
 
 int main(){
