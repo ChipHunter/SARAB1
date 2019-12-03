@@ -1,6 +1,4 @@
 #include"I2CDevice.h"
-#include<iostream>
-#include<sstream>
 #include<fcntl.h>
 #include<stdio.h>
 #include<iomanip>
@@ -8,118 +6,136 @@
 #include<sys/ioctl.h>
 #include<linux/i2c.h>
 #include<linux/i2c-dev.h>
-using namespace std;
 
 #define HEX(x) setw(2) << setfill('0') << hex << (int)(x)
 
-/**
- * Constructor for the I2CDevice class. It requires the bus number and device number. The constructor
- * opens a file handle to the I2C device, which is destroyed when the destructor is called
- * @param bus The bus number.
- * @param device The device ID on the bus.
- */
+/******************************************************************************/
+
 I2CDevice::I2CDevice(unsigned int bus, unsigned int device) {
-	file=-1;
-	bus = bus;
-	device = device;
-	open();
+
+	m_file = -1;
+	m_bus = bus;
+	m_device = device;
+	openI2C();
+
 }
 
-/**
- * Open a connection to an I2C device
- * @return 1 on failure to open to the bus or device, 0 on success.
- */
-int I2CDevice::open(){
-   string name;
-   if(bus==0) name = I2C_0;
-   else name = I2C_1;
+/******************************************************************************/
 
-   if((file=::open(name.c_str(), O_RDWR)) < 0){
-      perror("I2C: failed to open the bus\n");
-	  return 1;
-   }
-   if(ioctl(file, I2C_SLAVE, device) < 0){
-      perror("I2C: Failed to connect to the device\n");
-	  return 1;
-   }
-   return 0;
+I2CDevice::~I2CDevice() {
+	
+  if(m_file != -1) 
+    closeI2C();
+
 }
 
-/**
- * Write a single byte value to a single register.
- * @param registerAddress The register address
- * @param value The value to be written to the register
- * @return 1 on failure to write, 0 on success.
- */
+/******************************************************************************/
+
+int I2CDevice::openI2C(){
+
+  int ret = 0;
+  char name[16];
+  
+  if(m_bus == 0) 
+    snprintf(name, sizeof(name) ,I2C_0);
+  else 
+    snprintf(name, sizeof(name), I2C_1);
+
+  if((m_file = open(name, O_RDWR)) == -1){
+    perror("I2C: failed to open the bus\n");
+    ret=  1;
+  }
+
+  if(ioctl(m_file, I2C_SLAVE, m_device) < 0){
+    perror("I2C: Failed to connect to the device\n");
+    ret = 1;
+  }
+
+  return ret;
+
+}
+
+/******************************************************************************/
+
+int I2CDevice::closeI2C(){
+
+  int ret = 0;
+	if (close(m_file) == -1) {
+    perror("I2C: Failed to close the file \n");
+    ret = 1;
+  }
+	m_file = -1;
+
+  return ret;
+}
+
+/******************************************************************************/
 
 int I2CDevice::writeRegister(unsigned int registerAddress, unsigned char value){
-   unsigned char buffer[2];
-   buffer[0] = registerAddress;
-   buffer[1] = value;
-   if(::write(file, buffer, 2)!=2){
-      perror("I2C: Failed write to the device\n");
-      return 1;
-   }
-   return 0;
+
+  int ret = 0;
+  unsigned char buffer[2];
+  buffer[0] = registerAddress;
+  buffer[1] = value;
+  if(write(m_file, buffer, 2) != 2){
+    perror("I2C: Failed write to the device\n");
+    ret = 1;
+  }
+
+  return ret;
+
 }
 
-/**
- * Write a single value to the I2C device. Used to set up the device to read from a
- * particular address.
- * @param value the value to write to the device
- * @return 1 on failure to write, 0 on success.
- */
-int I2CDevice::write(unsigned char value){
-   unsigned char buffer[1];
-   buffer[0]=value;
-   if (::write(file, buffer, 1)!=1){
-      perror("I2C: Failed to write to the device\n");
-      return 1;
-   }
-   return 0;
+/******************************************************************************/
+
+int I2CDevice::writeI2C(unsigned char value){
+
+  int ret = 0;
+  unsigned char buffer[1];
+  buffer[0]=value;
+  if (write(m_file, buffer, 1) != 1){
+    perror("I2C: Failed to write to the device\n");
+    ret = 1;
+  }
+
+  return ret;
+
 }
 
-/**
- * Read a single register value from the address on the device.
- * @param registerAddress the address to read from
- * @return the byte value at the register address.
- */
-unsigned char I2CDevice::readRegister(unsigned int registerAddress){
-   write(registerAddress);
-   unsigned char buffer[1];
-   if(::read(file, buffer, 1)!=1){
-      perror("I2C: Failed to read in the value.\n");
-      return 1;
-   }
-   return buffer[0];
+/******************************************************************************/
+
+int I2CDevice::readRegister(unsigned int registerAddress, unsigned char* buf){
+
+  int ret = 0;
+  writeI2C(registerAddress);
+  if(read(m_file, buf, 1) != 1){
+    perror("I2C: Failed to read in the value.\n");
+    ret = 1;
+  }
+
+  return ret;
+
 }
 
-/**
- * Method to read a number of registers from a single device. This is much more efficient than
- * reading the registers individually. The from address is the starting address to read from, which
- * defaults to 0x00.
- * @param number the number of registers to read from the device
- * @param fromAddress the starting address to read from
- * @return a pointer of type unsigned char* that points to the first element in the block of registers
- */
-unsigned char* I2CDevice::readRegisters(unsigned int number, unsigned int fromAddress){
-	write(fromAddress);
-	unsigned char* data = new unsigned char[number];
-    if(::read(file, data, number)!=(int)number){
-       perror("IC2: Failed to read in the full buffer.\n");
-	   return NULL;
-    }
-	return data;
+/******************************************************************************/
+
+int I2CDevice::readRegisters(unsigned int number, unsigned int fromAddress,
+                             unsigned char* data){
+
+  int ret = 0;
+	writeI2C(fromAddress);
+  if(read(m_file, data, number) != (int)number){
+     perror("IC2: Failed to read in the full buffer.\n");
+   ret = 1;
+  }
+
+	return  ret;
+
 }
 
-/**
- * Method to dump the registers to the standard output. It inserts a return character after every
- * 16 values and displays the results in hexadecimal to give a standard output using the HEX() macro
- * that is defined at the top of this file. The standard output will stay in hexadecimal format, hence
- * the call on the last like.
- * @param number the total number of registers to dump, defaults to 0xff
- */
+/******************************************************************************/
 
+/*
 void I2CDevice::debugDumpRegisters(unsigned int number){
 	cout << "Dumping Registers for Debug Purposes:" << endl;
 	unsigned char *registers = readRegisters(number);
@@ -130,17 +146,4 @@ void I2CDevice::debugDumpRegisters(unsigned int number){
 	cout << dec;
 }
 
-/**
- * Close the file handles and sets a temporary state to -1.
- */
-void I2CDevice::close(){
-	::close(file);
-	file = -1;
-}
-
-/**
- * Closes the file on destruction, provided that it has not already been closed.
- */
-I2CDevice::~I2CDevice() {
-	if(file!=-1) close();
-}
+*/
