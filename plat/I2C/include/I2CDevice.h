@@ -1,9 +1,7 @@
 #ifndef I2C_H_
 #define I2C_H_
 
-#define I2C_0 "/dev/i2c-0"
-#define I2C_1 "/dev/i2c-1"
-
+#include "os_file.h"
 
 /**
  * @class I2CDevice
@@ -12,57 +10,41 @@
  */
 class I2CDevice{
 private:
-	unsigned int m_bus, m_device;
-	int          m_file;
+	int m_device;
+	OSFile       m_file;
 
 public:
   /**
-  * Constructor for the I2CDevice class. It requires the bus number and device number. 
-  * The constructor opens a file handle to the I2C device, which is destroyed when 
-  * the destructor is called
-  * @param bus The bus number.
+  * Constructor for the I2CDevice class. It requires the bus's name and device address.  
+  * @param i2c bus name.
   * @param device The device ID on the bus.
   **/
-	I2CDevice(unsigned int bus, unsigned int device);
+	I2CDevice(const char*, int device);
 
-  /**
-  * Closes the file on destruction, provided that it has not already been closed.
-  **/
 	virtual ~I2CDevice();
-
-  /**
-  * Open a connection to an I2C device
-  * @return 1 on failure to open to the bus or device, 0 on success.
-  */
-	virtual int openI2C();
-
-  /**
-  * Close the file handles and sets a temporary state to -1.
-  */
-	virtual int closeI2C();
 
   /**
   * Write a single value to the I2C device. Used to set up the device to read from a
   * particular address.
   * @param value the value to write to the device
-  * @return 1 on failure to write, 0 on success.
+  * @return nothing 
   */
-  virtual int writeI2C(unsigned char value);
+  virtual void writeI2C(char value);
 
   /**
   * Write a single byte value to a single register.
   * @param registerAddress The register address
   * @param value The value to be written to the register
-  * @return 1 on failure to write, 0 on success.
+  * @return nothing 
   */
-	virtual int writeRegister(unsigned int registerAddress, unsigned char value);
+	virtual void writeRegister(int registerAddress, char value);
 
   /**
   * Read a single register value from the address on the device.
   * @param registerAddress the address to read from
-  * @return the byte value at the register address.
+  * @return nothing 
   */
-	virtual int readRegister(unsigned int registerAddress, unsigned char* buf);
+	virtual void readRegister(int registerAddress, char* buf);
 
   /**
   * Method to read a number of registers from a single device. This is much more efficient than
@@ -70,11 +52,10 @@ public:
   * which defaults to 0x00.
   * @param number the number of registers to read from the device
   * @param fromAddress the starting address to read from
-  * @return a pointer of type unsigned char* that points to the first element in the block of 
-  * registers
+  * @param data a buffer to read to 
+  * @return nothing 
   */
-	virtual int readRegisters(unsigned int number, unsigned int fromAddress, 
-                                        unsigned char* data);
+	virtual void readRegisters(int number, int fromAddress, char* data);
 
   /**
   * Method to dump the registers to the standard output. It inserts a return character after every

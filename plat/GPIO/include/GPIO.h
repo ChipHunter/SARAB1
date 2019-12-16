@@ -40,9 +40,6 @@ public:
   GPIO_EDGE      getEdgeType();
 
 private:
-  void writeGPIO(int fd, const char* value);
-	void writeGPIO(int fd, int value);
-	void readGPIO(int fd, char str[], int len);
   void exportGPIO();
 	void unexportGPIO();
 };

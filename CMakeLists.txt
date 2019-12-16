@@ -29,12 +29,14 @@ set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${GCC_PTHREAD_FLAGS}")
 include_directories(plat/GPIO/include)
 include_directories(plat/SPI/include)
 include_directories(plat/I2C/include)
+include_directories(plat/os_wrappers/include)
 include_directories(comp/ADXL345/include)
  
 # Add source files 
 file(GLOB SOURCES plat/GPIO/src/*.cpp ${SOURCES})
 file(GLOB SOURCES plat/SPI/src/*.cpp ${SOURCES})
 file(GLOB SOURCES plat/I2C/src/*.cpp ${SOURCES})
+file(GLOB SOURCES plat/os_wrappers/src/*.cpp ${SOURCES})
 file(GLOB SOURCES comp/ADXL345/src/*.cpp ${SOURCES})
 file(GLOB SOURCES prod/*.cpp ${SOURCES})
 
