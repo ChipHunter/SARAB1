@@ -11,10 +11,10 @@
 /*********************************************************************/
 
 GPIO::GPIO(int pinNumber) {
-	
+  
   gpioPinNumber = pinNumber; 
   
-	exportGPIO();
+  exportGPIO();
   
   // need to give Linux time to set up the sysfs structure	
   usleep(250000); // 250ms delay
@@ -26,22 +26,21 @@ GPIO::GPIO(int pinNumber) {
 
   snprintf(pathToDirectionFile, sizeof(pathToDirectionFile), "%sdirection", 
            gpioPathComplete);  
-	
+  
   snprintf(pathToValueFile, sizeof(pathToValueFile), "%svalue", 
            gpioPathComplete);  
 
-	snprintf(pathToEdgeFile, sizeof(pathToEdgeFile), "%sedge", 
+  snprintf(pathToEdgeFile, sizeof(pathToEdgeFile), "%sedge", 
            gpioPathComplete);  
-  
 
-	snprintf(pathToActiveLowFile, sizeof(pathToActiveLowFile), "%sactive_low", 
+  snprintf(pathToActiveLowFile, sizeof(pathToActiveLowFile), "%sactive_low", 
            gpioPathComplete);  
   
 }
 
 /*********************************************************************/
 
-void GPIO::exportGPIO(){
+void GPIO::exportGPIO() {
   
   char str[4] = {0};
   char filePath[strlen(GPIO_UPPER_DIR) + strlen("export") + 1] = {0};
@@ -56,7 +55,7 @@ void GPIO::exportGPIO(){
 
 /*********************************************************************/
 
-void GPIO::unexportGPIO(){
+void GPIO::unexportGPIO() {
   
   char str[4] = {0};
   char filePath[strlen(GPIO_UPPER_DIR) + strlen("unexport") + 1] = {0};
@@ -72,7 +71,7 @@ void GPIO::unexportGPIO(){
 /*********************************************************************/
 
 GPIO_DIRECTION GPIO::getDirection() {
-	
+  
   char str[4] = {0};
   GPIO_DIRECTION res = INPUT;
   
@@ -181,12 +180,12 @@ void GPIO::setActiveHigh() {
 int GPIO::getActiveLow() {
 
   int res = 0;
-	char str[2] = {0};
+  char str[2] = {0};
 
   OSFile file(pathToActiveLowFile, O_RDONLY);
   file.read(str, sizeof(str));
-	
-	res = atoi(str);
+  
+  res = atoi(str);
 
   return res;
 
@@ -195,14 +194,14 @@ int GPIO::getActiveLow() {
 /*********************************************************************/
 
 GPIO_VALUE GPIO::getValue() {
-	
+  
   char str[2] = {0};
   GPIO_VALUE res = LOW;
 
   OSFile file(pathToValueFile, O_RDONLY);
   file.read(str, sizeof(str));
 
-	if (strncmp(str, "0", 1) == 0) {
+  if (strncmp(str, "0", 1) == 0) {
     res = LOW;
   } else { 
     res = HIGH;
@@ -216,7 +215,7 @@ GPIO_VALUE GPIO::getValue() {
 
 GPIO_EDGE GPIO::getEdgeType() {
 
-	char str[8] = {0};
+  char str[8] = {0};
   GPIO_EDGE res = NONE;
 
   OSFile file(pathToEdgeFile, O_RDONLY);
@@ -227,10 +226,10 @@ GPIO_EDGE GPIO::getEdgeType() {
   } else if(strncmp(str, "falling", 7) == 0){
     res = FALLING;
   } else if(strncmp(str, "both", 4) == 0){
-		res = BOTH;
-	} else {
-		res = NONE;
-	}
+    res = BOTH;
+  } else {
+    res = NONE;
+  }
   
   return res;
 }

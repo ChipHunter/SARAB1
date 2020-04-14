@@ -1,17 +1,43 @@
-#include "GPIO.h"
+#include <iostream>
+#include "ADXL345.h"
 #include <unistd.h>
+#include <pthread.h>
+#include <system_error>
+#include <syslog.h>
 
-int main(){
-  GPIO gpio27(27);
+#include "GPIO.h"
 
+using namespace std;
+using namespace exploringRPi;
 
-  gpio27.setActiveLow(true);
-  printf("gpio27 edge type is %d \n", gpio27.getActiveLow());
+int main() {
+   openlog("slog", LOG_PID|LOG_CONS, LOG_USER);
+    syslog(LOG_ERR, "%s:%d Can't close the file", __FUNCTION__, __LINE__);   
+    closelog();
+ /*try { 
+  GPIO out(17);
 
+  out.setDirection(OUTPUT);
+  out.setActiveLow(true);
+  out.setValue(LOW);
+  usleep(6 * 1000000);
+  out.setValue(HIGH);
+  usleep(6 * 1000000);
+ }*/
+  /*  try {
+   ADXL345 sensor(1,0x53);
+   sensor.setResolution(ADXL345::NORMAL);
+   sensor.setRange(ADXL345::PLUSMINUS_4_G);
+   sensor.displayPitchAndRoll();
+   } 
+*/
+  /*catch(std::system_error& error) {
+    std::cout << "Error: " << error.code() << " - " << error.what() << '\n'; 
+  }*/
 
-  gpio27.setActiveHigh();
-  printf("gpio27 edge type is %d \n", gpio27.getActiveLow());
-
-  printf("done \n");
   return 0;
 }
+  
+  
+
+
