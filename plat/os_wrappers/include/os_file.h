@@ -1,6 +1,12 @@
 #ifndef OS_FILE_H_
 #define OS_FILE_H_
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
+namespace sarab {
+
+namespace os {
 
 class OSFile {
 private:
@@ -16,6 +22,8 @@ public:
 
 };
 
+}
 
+}
 
 #endif /*OS_FILE_H_ */

@@ -24,6 +24,7 @@ set(CMAKE_CXX_STANDARD 11)
 # add compiler flags
 set(GCC_PTHREAD_FLAGS "-pthread")
 set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${GCC_PTHREAD_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-long-long -pedantic")
 
 #Bring the headers into the project
 include_directories(plat/GPIO/include)

@@ -10,8 +10,8 @@
  */
 class I2CDevice{
 private:
-	int m_device;
-	OSFile       m_file;
+	int                     m_device;
+  sarab::os::OSFile       m_file;
 
 public:
   /**

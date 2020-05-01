@@ -9,6 +9,7 @@
 #include "os_file.h"
 
 /*********************************************************************/
+using sarab::os::OSFile;
 
 GPIO::GPIO(int pinNumber) {
   

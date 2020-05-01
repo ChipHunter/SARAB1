@@ -1,6 +1,3 @@
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 #include <system_error>
 #include <unistd.h>
 #include <syslog.h>
@@ -8,7 +5,7 @@
 
 #include "os_file.h"
 
-
+using sarab::os::OSFile;
 
 OSFile::OSFile(const char* name, int flags) {
 
