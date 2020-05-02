@@ -1,4 +1,5 @@
 #include "os_epoll.h"
+#include "os_carray.h"
 
 using sarab::os::osEpoll;
 
@@ -47,19 +48,14 @@ void osEpoll::modFd(int fd, int eventMask) {
 
 int osEpoll::waitForEvents(eventsVect& events, int maxEvents) {
 
-  struct epoll_event* evList;
-  evList = new epoll_event[maxEvents];
+  carray<struct epoll_event> arr(maxEvents);
 
-  int ready = epoll_wait(m_epollFd, evList, maxEvents, -1);
+  int ready = epoll_wait(m_epollFd, arr.getPtr(), maxEvents, -1);
   if (ready == -1) {
-    delete [] evList;
     throw std::system_error(errno, std::generic_category()); 
   }
 
-  for (int i = 0; i < maxEvents; i++)
-    events.push_back(evList[i]);
-
-  delete [] evList;
+  arr.copyToVector(events);
 
   return ready;
 
