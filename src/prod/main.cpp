@@ -1,5 +1,4 @@
 #include <iostream>
-#include "ADXL345.h"
 #include <unistd.h>
 #include <pthread.h>
 #include <system_error>
@@ -8,7 +7,6 @@
 #include "GPIO.h"
 
 using namespace std;
-using namespace exploringRPi;
 
 int main() {
    openlog("slog", LOG_PID|LOG_CONS, LOG_USER);
