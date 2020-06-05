@@ -1,12 +1,12 @@
-#include "os_socket.h"
-
-#include <syslog.h>
 #include <system_error>
 #include <unistd.h>
 #include <string.h>
 #include <stdio.h>
 #include <thread>
 #include <sstream>
+
+#include "os_socket.h"
+#include "easylogging++.h"
 
 using namespace sarab::os;
 
@@ -20,19 +20,17 @@ OSSocket::OSSocket() {
 
   m_fd = socket(AF_UNIX, SOCK_DGRAM, 0);
   if(m_fd == -1) {
-    syslog(LOG_ERR, "%s:%d Can't create the socket: %s", __FUNCTION__,
-                  __LINE__, strerror(errno));
+    LOG(ERROR) << "Can't create the socket: " << strerror(errno);
     throw std::system_error(errno, std::generic_category());
   }
 
   if(m_path.size() > sizeof(addr.sun_path) - 1) {
-    syslog(LOG_ERR, "%s:%d Socket path is too long!", __FUNCTION__, __LINE__);
+    LOG(ERROR) << "Socket path is too long! " << strerror(errno);
     // FIXME: throw user-defined exception
   }
 
   if(remove(m_path.c_str()) == -1 && errno != ENOENT) {
-    syslog(LOG_ERR, "%s:%d Can't remove the path %s", __FUNCTION__,
-                  __LINE__, strerror(errno));
+    LOG(ERROR) << "Can't remove the path " << strerror(errno);
     throw std::system_error(errno, std::generic_category());
   }
 
@@ -41,8 +39,7 @@ OSSocket::OSSocket() {
   strncpy(addr.sun_path, m_path.c_str(), sizeof(addr.sun_path) -1);
 
   if(bind(m_fd, (struct sockaddr *) &addr, sizeof(struct sockaddr_un)) == -1) {
-    syslog(LOG_ERR, "%s:%d Can't bind the socket: %s", __FUNCTION__,
-                  __LINE__, strerror(errno));
+    LOG(ERROR) << "Can't bind the socket " << strerror(errno);
     throw std::system_error(errno, std::generic_category());
   }
 
@@ -55,12 +52,10 @@ OSSocket::OSSocket() {
 OSSocket::~OSSocket() {
 
   if(close(m_fd) == -1)
-    syslog(LOG_ERR, "%s:%d Can't close the socket: %s", __FUNCTION__,
-                  __LINE__, strerror(errno));
+    LOG(ERROR) << "Can't close the socket " << strerror(errno);
 
   if(remove(m_path.c_str()) == -1 && errno != ENOENT)
-    syslog(LOG_ERR, "%s:%d Can't remove the path: %s", __FUNCTION__,
-                  __LINE__, strerror(errno));
+    LOG(ERROR) << "Can't remove the path: " << strerror(errno);
 }
 
 void OSSocket::send(struct msg* myMsg, std::string targetPath) {
@@ -69,8 +64,7 @@ void OSSocket::send(struct msg* myMsg, std::string targetPath) {
 
   if(sendto(m_fd, myMsg, sizeof(struct msg), 0, (struct sockaddr*)&m_targetAddr,
             sizeof(sockAddrUn)) != sizeof(struct msg)) {
-    syslog(LOG_ERR, "%s:%d Sending failed: %s", __FUNCTION__,
-                  __LINE__, strerror(errno));
+    LOG(ERROR) << "Sending failed: " << strerror(errno);
     throw std::system_error(errno, std::generic_category());
   }
 
@@ -80,8 +74,7 @@ void OSSocket::recv(struct msg* myMsg) {
 
   int numBytes = recvfrom(m_fd, myMsg, sizeof(struct msg), 0, NULL, NULL);
   if(numBytes == -1) {
-    syslog(LOG_ERR, "%s:%d Recieving failed: %s", __FUNCTION__,
-                  __LINE__, strerror(errno));
+    LOG(ERROR) << "Recieving failed: " << strerror(errno);
     throw std::system_error(errno, std::generic_category());
   }
 

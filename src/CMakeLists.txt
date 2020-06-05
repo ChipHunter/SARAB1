@@ -59,6 +59,10 @@ target_compile_options(${EXCUTABLE_NAME} PRIVATE -Wall -Werror -Wno-long-long -p
 
 # find required libs
 #find_library(SQLPARSERLIB libsqlparser.so)
-
+# add compile definition
+# easyloggingpp
+add_compile_definitions(ELPP_THREAD_SAFE)
+add_compile_definitions(ELPP_FORCE_USE_STD_THREAD)
+add_compile_definitions(ELPP_FEATURE_CRASH_LOG)
 # link libs
 target_link_libraries(${EXCUTABLE_NAME} PRIVATE ${CMAKE_SYSROOT}/usr/local/lib/libsqlparser.so)
