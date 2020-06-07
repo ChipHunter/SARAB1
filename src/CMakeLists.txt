@@ -8,6 +8,9 @@ set(CMAKE_C_STANDARD   99)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+#add thread support
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+
 # add excutable
 add_executable(${EXCUTABLE_NAME})
 
@@ -42,6 +45,9 @@ file(GLOB SOURCES ${CMAKE_SOURCE_DIR}/plat/I2C/src/*.cpp ${SOURCES})
 file(GLOB SOURCES ${CMAKE_SOURCE_DIR}/plat/os_wrappers/src/*.cpp ${SOURCES})
 file(GLOB SOURCES ${CMAKE_SOURCE_DIR}/prod/*.cpp ${SOURCES})
 file(GLOB SOURCES ${CMAKE_SOURCE_DIR}/third/easyloggingpp/src/*.cc ${SOURCES})
+file(GLOB SOURCES ${CMAKE_SOURCE_DIR}/plat/unit/src/*.cpp ${SOURCES})
+file(GLOB SOURCES ${CMAKE_SOURCE_DIR}/units/sqlparser/src/*.cpp ${SOURCES})
+file(GLOB SOURCES ${CMAKE_SOURCE_DIR}/plat/utils/src/*.cpp ${SOURCES})
 
 target_sources(${EXCUTABLE_NAME} PRIVATE ${SOURCES})
 
@@ -52,17 +58,22 @@ target_include_directories(${EXCUTABLE_NAME} PRIVATE plat/I2C/include)
 target_include_directories(${EXCUTABLE_NAME} PRIVATE plat/os_wrappers/include)
 target_include_directories(${EXCUTABLE_NAME} PRIVATE third/sql_parser/src)
 target_include_directories(${EXCUTABLE_NAME} PRIVATE third/easyloggingpp/src)
+target_include_directories(${EXCUTABLE_NAME} PRIVATE plat/unit/include)
+target_include_directories(${EXCUTABLE_NAME} PRIVATE units/sqlparser/include)
+target_include_directories(${EXCUTABLE_NAME} PRIVATE plat/utils/include)
 
 # add compiler options
-target_compile_options(${EXCUTABLE_NAME} PRIVATE -pthread)
 target_compile_options(${EXCUTABLE_NAME} PRIVATE -Wall -Werror -Wno-long-long -pedantic)
 
-# find required libs
-#find_library(SQLPARSERLIB libsqlparser.so)
+# find required libs and pkgs
+find_package(Threads REQUIRED)
+
 # add compile definition
 # easyloggingpp
 add_compile_definitions(ELPP_THREAD_SAFE)
 add_compile_definitions(ELPP_FORCE_USE_STD_THREAD)
 add_compile_definitions(ELPP_FEATURE_CRASH_LOG)
+
 # link libs
+target_link_libraries(sarab1 PRIVATE Threads::Threads)
 target_link_libraries(${EXCUTABLE_NAME} PRIVATE ${CMAKE_SYSROOT}/usr/local/lib/libsqlparser.so)

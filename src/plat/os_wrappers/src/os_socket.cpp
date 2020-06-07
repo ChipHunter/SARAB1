@@ -62,7 +62,7 @@ void OSSocket::send(struct msg* myMsg, std::string targetPath) {
 
   strncpy(m_targetAddr.sun_path, targetPath.c_str(), sizeof(m_targetAddr.sun_path) - 1);
 
-  if(sendto(m_fd, myMsg, sizeof(struct msg), 0, (struct sockaddr*)&m_targetAddr,
+  if(sendto(m_fd, &myMsg, sizeof(struct msg), 0, (struct sockaddr*)&m_targetAddr,
             sizeof(sockAddrUn)) != sizeof(struct msg)) {
     LOG(ERROR) << "Sending failed: " << strerror(errno);
     throw std::system_error(errno, std::generic_category());

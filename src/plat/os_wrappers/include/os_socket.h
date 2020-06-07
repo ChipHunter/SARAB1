@@ -7,15 +7,16 @@
 #include <vector>
 #include <sys/un.h>
 
-namespace sarab {
-
-namespace os {
-
 // FIXME: this is just temporary for testing purposes
 struct msg {
   char senderPath[48];
   char message[148];
 };
+
+namespace sarab {
+
+namespace os {
+
 
 class OSSocket {
 
@@ -27,6 +28,9 @@ public:
 
   void send(struct msg* myMsg, std::string targetPath);
   void recv(struct msg* myMsg);
+
+  int          getFd()   const { return m_fd; }
+  std::string  getPath() const { return m_path; }
 
 private:
         int         m_fd;

@@ -1,9 +1,9 @@
 #include "os_epoll.h"
 #include "os_carray.h"
 
-using sarab::os::osEpoll;
+using sarab::os::OSEpoll;
 
-osEpoll::osEpoll() {
+OSEpoll::OSEpoll() {
   
   m_epollFd = epoll_create(m_epollSize);
   if (m_epollFd == -1)
@@ -11,11 +11,11 @@ osEpoll::osEpoll() {
 
 }
 
-osEpoll::~osEpoll() {
+OSEpoll::~OSEpoll() {
 
 }
 
-void osEpoll::addFd(int fd, int eventMask) {
+void OSEpoll::addFd(int fd, int eventMask) {
  
   struct epoll_event ev;
   
@@ -27,14 +27,14 @@ void osEpoll::addFd(int fd, int eventMask) {
 
 }
 
-void osEpoll::delFd(int fd) {
+void OSEpoll::delFd(int fd) {
  
   if(epoll_ctl(m_epollFd, EPOLL_CTL_DEL, fd, nullptr) == -1)
     throw std::system_error(errno, std::generic_category()); 
 
 }
 
-void osEpoll::modFd(int fd, int eventMask) {
+void OSEpoll::modFd(int fd, int eventMask) {
  
   struct epoll_event ev;
   
@@ -46,7 +46,7 @@ void osEpoll::modFd(int fd, int eventMask) {
 
 }
 
-int osEpoll::waitForEvents(eventsVect& events, int maxEvents) {
+int OSEpoll::waitForEvents(eventsVect& events, const int maxEvents) {
 
   carray<struct epoll_event> arr(maxEvents);
 

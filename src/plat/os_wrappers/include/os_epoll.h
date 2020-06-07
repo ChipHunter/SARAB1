@@ -11,15 +11,15 @@ namespace os {
 
 using eventsVect = std::vector<struct epoll_event>;
 
-class osEpoll {
+class OSEpoll {
 public:
-  osEpoll();
-  ~osEpoll();
+  OSEpoll();
+  ~OSEpoll();
 
   void addFd(int fd, int eventMask);
   void delFd(int fd);
   void modFd(int fd, int eventMask);
-  int  waitForEvents(eventsVect& events, int maxEvents);
+  int  waitForEvents(eventsVect& events, const int maxEvents);
 
 private:
   int       m_epollFd;
