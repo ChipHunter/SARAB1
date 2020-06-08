@@ -1,6 +1,6 @@
 #include "unit.h"
 
-using namespace sarab::units;
+using namespace sarab::unit;
 using namespace sarab::utils;
 using namespace sarab::os;
 

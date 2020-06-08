@@ -7,6 +7,8 @@
 #include <vector>
 #include <sys/un.h>
 
+#include "utils.h"
+
 // FIXME: this is just temporary for testing purposes
 struct msg {
   char senderPath[48];
@@ -30,13 +32,13 @@ public:
   void recv(struct msg* myMsg);
 
   int          getFd()   const { return m_fd; }
-  std::string  getPath() const { return m_path; }
+  std::string  getAddr() const { return m_sckAddr; }
 
 private:
-        int         m_fd;
-        std::string m_path;
-  const std::string m_pathStart = "/tmp/sck_";
-        sockAddrUn  m_targetAddr;
+  int                 m_fd;
+  std::string         m_sckAddr;
+  sockAddrUn          m_targetAddr;
+  sarab::utils::utils m_utils;
 };
 
 }

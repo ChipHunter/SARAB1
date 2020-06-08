@@ -3,24 +3,39 @@
 #include <sstream>
 #include <chrono>
 #include "unit.h"
-
+#include "os_thread.h"
+#include "sqlparser_unit.h"
+#include <memory>
 // initialize easyloggingpp
 INITIALIZE_EASYLOGGINGPP
 
 using namespace std;
 using namespace sarab::os;
-using namespace sarab::units;
+using namespace sarab::unit;
+using namespace sarab::utils;
+using namespace sarab::thread;
 
 void funcToRun(string id);
+
+void func(thread::id id) {
+
+  utils ut{};
+  cout << "from thread! " << ut.computeSckAddr(id) << endl;
+
+}
 
 int main() {
   el::Configurations conf("/tmp/easyloggingpp.conf");
   el::Loggers::reconfigureLogger("default", conf);
 
-  stringstream parentAddr;
-  parentAddr << this_thread::get_id();
-  thread t1{funcToRun, parentAddr.str()};
 
+//  funcObj* func = new sqlparserFunc(this_thread::get_id());
+  sarab::sqlp::funcObj func1{this_thread::get_id()};
+  guardedThread t1{func1};
+//  stringstream parentAddr;
+//  parentAddr << this_thread::get_id();
+//  thread t1{funcToRun, parentAddr.str()};
+/*
   unit u("");
 
   struct msg myMsg;
@@ -39,7 +54,7 @@ int main() {
 
     u.waitForEvents(events);
 
-    cout << "Mar7abn!" << endl;
+    cout << "Ahlan!" << endl;
 
     this_thread::sleep_for(chrono::seconds(1));
   }
@@ -50,7 +65,7 @@ int main() {
   cout << "be Tarek! :D" << endl;
 
   t1.join();
-
+*/
   return 0;
 }
 
@@ -72,7 +87,7 @@ void funcToRun(string id) {
 
     u.sendMsg(&myMsg);
 
-    cout << "Ahaln!" << endl;
+    cout << "Mar7abn!" << endl;
   }
 }
 

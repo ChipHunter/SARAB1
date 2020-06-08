@@ -7,7 +7,7 @@
 
 namespace sarab {
 
-namespace units {
+namespace unit {
 
 /* A base class that defines the concept of a unit. Which is  a logical entity that
  * runs inside its own thread and communicate with the main thread through messages
@@ -58,6 +58,7 @@ private:
         sarab::os::OSEpoll  m_epoll{};
         sarab::utils::utils m_utils{};
 };
+
 
 }
 

@@ -3,7 +3,6 @@
 #include <string.h>
 #include <stdio.h>
 #include <thread>
-#include <sstream>
 
 #include "os_socket.h"
 #include "easylogging++.h"
@@ -14,9 +13,7 @@ OSSocket::OSSocket() {
 
   sockAddrUn addr;
 
-  std::stringstream ss;
-  ss << std::this_thread::get_id();
-  m_path = m_pathStart + ss.str();
+  m_sckAddr = m_utils.computeSckAddr(std::this_thread::get_id());
 
   m_fd = socket(AF_UNIX, SOCK_DGRAM, 0);
   if(m_fd == -1) {
@@ -24,19 +21,19 @@ OSSocket::OSSocket() {
     throw std::system_error(errno, std::generic_category());
   }
 
-  if(m_path.size() > sizeof(addr.sun_path) - 1) {
+  if(m_sckAddr.size() > sizeof(addr.sun_path) - 1) {
     LOG(ERROR) << "Socket path is too long! " << strerror(errno);
     // FIXME: throw user-defined exception
   }
 
-  if(remove(m_path.c_str()) == -1 && errno != ENOENT) {
+  if(remove(m_sckAddr.c_str()) == -1 && errno != ENOENT) {
     LOG(ERROR) << "Can't remove the path " << strerror(errno);
     throw std::system_error(errno, std::generic_category());
   }
 
   memset(&addr, 0, sizeof(struct sockaddr_un));
   addr.sun_family = AF_UNIX;
-  strncpy(addr.sun_path, m_path.c_str(), sizeof(addr.sun_path) -1);
+  strncpy(addr.sun_path, m_sckAddr.c_str(), sizeof(addr.sun_path) -1);
 
   if(bind(m_fd, (struct sockaddr *) &addr, sizeof(struct sockaddr_un)) == -1) {
     LOG(ERROR) << "Can't bind the socket " << strerror(errno);
@@ -54,7 +51,7 @@ OSSocket::~OSSocket() {
   if(close(m_fd) == -1)
     LOG(ERROR) << "Can't close the socket " << strerror(errno);
 
-  if(remove(m_path.c_str()) == -1 && errno != ENOENT)
+  if(remove(m_sckAddr.c_str()) == -1 && errno != ENOENT)
     LOG(ERROR) << "Can't remove the path: " << strerror(errno);
 }
 
