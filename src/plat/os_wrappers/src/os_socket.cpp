@@ -7,9 +7,7 @@
 #include "os_socket.h"
 #include "easylogging++.h"
 
-using namespace sarab::os;
-
-OSSocket::OSSocket() {
+sarab::os::OSSocket::OSSocket() {
 
   sockAddrUn addr;
 
@@ -46,7 +44,7 @@ OSSocket::OSSocket() {
 
 }
 
-OSSocket::~OSSocket() {
+sarab::os::OSSocket::~OSSocket() {
 
   if(close(m_fd) == -1)
     LOG(ERROR) << "Can't close the socket " << strerror(errno);
@@ -55,7 +53,7 @@ OSSocket::~OSSocket() {
     LOG(ERROR) << "Can't remove the path: " << strerror(errno);
 }
 
-void OSSocket::send(struct msg* myMsg, std::string targetPath) {
+void sarab::os::OSSocket::send(struct msg* myMsg, std::string targetPath) {
 
   strncpy(m_targetAddr.sun_path, targetPath.c_str(), sizeof(m_targetAddr.sun_path) - 1);
 
@@ -67,7 +65,7 @@ void OSSocket::send(struct msg* myMsg, std::string targetPath) {
 
 }
 
-void OSSocket::recv(struct msg* myMsg) {
+void sarab::os::OSSocket::recv(struct msg* myMsg) {
 
   int numBytes = recvfrom(m_fd, myMsg, sizeof(struct msg), 0, NULL, NULL);
   if(numBytes == -1) {

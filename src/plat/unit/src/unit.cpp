@@ -1,15 +1,9 @@
 #include "unit.h"
 #include "easylogging++.h"
 
-using namespace sarab::unit;
-using namespace sarab::utils;
-using namespace sarab::os;
-using namespace std;
-
 using eventType = sarab::defs::defs::defs::eventType;
 
-
-unit::unit(string parentId) {
+sarab::unit::unit::unit(std::string parentId) {
 
   if(!parentId.empty()) {
     m_parentId = parentId;
@@ -22,13 +16,13 @@ unit::unit(string parentId) {
 }
 
 
-void unit::waitForEvents(eventsVect& events) {
+void sarab::unit::unit::waitForEvents(sarab::os::eventsVect& events) {
 
   m_epoll.waitForEvents(events, m_maxEvents);
 
 }
 
-void unit::addFd(int fd, eventType event) {
+void sarab::unit::unit::addFd(int fd, eventType event) {
 
   switch(event) {
     case eventType::EREAD:
@@ -46,13 +40,13 @@ void unit::addFd(int fd, eventType event) {
   }
 }
 
-void unit::delFd(int fd) {
+void sarab::unit::unit::delFd(int fd) {
 
   m_epoll.delFd(fd);
 
 }
 
-void unit::modFd(int fd, eventType event) {
+void sarab::unit::unit::modFd(int fd, eventType event) {
 
   switch(event) {
     case eventType::EREAD:
@@ -71,7 +65,7 @@ void unit::modFd(int fd, eventType event) {
 
 }
 
-void unit::sendMsg(struct msg* myMsg, string destAddr) {
+void sarab::unit::unit::sendMsg(struct msg* myMsg, std::string destAddr) {
 
   if (!destAddr.empty()) {
 
@@ -89,7 +83,7 @@ void unit::sendMsg(struct msg* myMsg, string destAddr) {
 
 }
 
-void unit::recvMsg(struct msg* myMsg) {
+void sarab::unit::unit::recvMsg(struct msg* myMsg) {
 
   m_uSck.recv(myMsg);
 

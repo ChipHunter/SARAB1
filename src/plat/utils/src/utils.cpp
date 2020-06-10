@@ -1,20 +1,27 @@
 #include "utils.h"
 #include <sstream>
 
-using namespace std;
-using namespace sarab::utils;
+std::string sarab::utils::utils::computeSckAddr(std::thread::id id) {
 
-string utils::computeSckAddr(thread::id id) {
-
-  stringstream ss;
+  std::stringstream ss;
   ss << d.getSckLocation() << d.getSckNamePre() << id;
 
   return ss.str();
 
 }
 
-string utils::computeSckAddr(string id) const {
+std::string sarab::utils::utils::computeSckAddr(std::string id) const {
 
   return d.getSckLocation() + d.getSckNamePre() + id;
+
+}
+
+std::string sarab::utils::utils::threadIdToString(std::thread::id id) {
+
+  std::stringstream ss;
+
+  ss << id;
+
+  return ss.str();
 
 }

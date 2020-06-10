@@ -24,43 +24,43 @@ ExternalProject_Add(sqlparser
   BUILD_COMMAND     make CXX=${CMAKE_CXX_COMPILER} -C <SOURCE_DIR>
   INSTALL_COMMAND   make -C <SOURCE_DIR> install
 )
- 
+
 ExternalProject_Add(easyloggingpp
   GIT_REPOSITORY    https://github.com/amrayn/easyloggingpp.git
   SOURCE_DIR        ${CMAKE_SOURCE_DIR}/third/easyloggingpp
   PATCH_COMMAND     ""
   CONFIGURE_COMMAND ""
-  BUILD_COMMAND     "" 
+  BUILD_COMMAND     ""
   INSTALL_COMMAND   ""
 )
 
-# define dependencies 
+# define dependencies
 add_dependencies(${EXCUTABLE_NAME} sqlparser)
 add_dependencies(${EXCUTABLE_NAME} easyloggingpp)
 
-# add source files 
+# add source files
 file(GLOB SOURCES ${CMAKE_SOURCE_DIR}/plat/GPIO/src/*.cpp ${SOURCES})
 file(GLOB SOURCES ${CMAKE_SOURCE_DIR}/plat/SPI/src/*.cpp ${SOURCES})
 file(GLOB SOURCES ${CMAKE_SOURCE_DIR}/plat/I2C/src/*.cpp ${SOURCES})
 file(GLOB SOURCES ${CMAKE_SOURCE_DIR}/plat/os_wrappers/src/*.cpp ${SOURCES})
-file(GLOB SOURCES ${CMAKE_SOURCE_DIR}/prod/*.cpp ${SOURCES})
-file(GLOB SOURCES ${CMAKE_SOURCE_DIR}/third/easyloggingpp/src/*.cc ${SOURCES})
+file(GLOB SOURCES ${CMAKE_SOURCE_DIR}/plat/utils/src/*.cpp ${SOURCES})
 file(GLOB SOURCES ${CMAKE_SOURCE_DIR}/plat/unit/src/*.cpp ${SOURCES})
 file(GLOB SOURCES ${CMAKE_SOURCE_DIR}/units/sqlparser/src/*.cpp ${SOURCES})
-file(GLOB SOURCES ${CMAKE_SOURCE_DIR}/plat/utils/src/*.cpp ${SOURCES})
+file(GLOB SOURCES ${CMAKE_SOURCE_DIR}/prod/*.cpp ${SOURCES})
+file(GLOB SOURCES ${CMAKE_SOURCE_DIR}/third/easyloggingpp/src/*.cc ${SOURCES})
 
 target_sources(${EXCUTABLE_NAME} PRIVATE ${SOURCES})
 
 # add header locations
-target_include_directories(${EXCUTABLE_NAME} PRIVATE plat/GPIO/include)
-target_include_directories(${EXCUTABLE_NAME} PRIVATE plat/SPI/include)
-target_include_directories(${EXCUTABLE_NAME} PRIVATE plat/I2C/include)
-target_include_directories(${EXCUTABLE_NAME} PRIVATE plat/os_wrappers/include)
-target_include_directories(${EXCUTABLE_NAME} PRIVATE third/sql_parser/src)
-target_include_directories(${EXCUTABLE_NAME} PRIVATE third/easyloggingpp/src)
-target_include_directories(${EXCUTABLE_NAME} PRIVATE plat/unit/include)
-target_include_directories(${EXCUTABLE_NAME} PRIVATE units/sqlparser/include)
-target_include_directories(${EXCUTABLE_NAME} PRIVATE plat/utils/include)
+target_include_directories(${EXCUTABLE_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/plat/GPIO/include)
+target_include_directories(${EXCUTABLE_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/plat/SPI/include)
+target_include_directories(${EXCUTABLE_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/plat/I2C/include)
+target_include_directories(${EXCUTABLE_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/plat/os_wrappers/include)
+target_include_directories(${EXCUTABLE_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/plat/utils/include)
+target_include_directories(${EXCUTABLE_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/plat/unit/include)
+target_include_directories(${EXCUTABLE_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/units/sqlparser/include)
+target_include_directories(${EXCUTABLE_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/third/sql_parser/src)
+target_include_directories(${EXCUTABLE_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/third/easyloggingpp/src)
 
 # add compiler options
 target_compile_options(${EXCUTABLE_NAME} PRIVATE -Wall -Werror -Wno-long-long -pedantic)
