@@ -1,16 +1,19 @@
 #include "unit.h"
+#include "easylogging++.h"
 
 using namespace sarab::unit;
 using namespace sarab::utils;
 using namespace sarab::os;
-
 using namespace std;
+
+using eventType = sarab::defs::defs::defs::eventType;
+
 
 unit::unit(string parentId) {
 
   if(!parentId.empty()) {
     m_parentId = parentId;
-    m_parentAddr = m_utils.getSckLocation() + m_utils.getSckNamePre() + parentId;
+    m_parentAddr = m_utils.computeSckAddr(parentId);
   }
 
   // FIXME: see which flags we should set
@@ -25,10 +28,22 @@ void unit::waitForEvents(eventsVect& events) {
 
 }
 
-void unit::addFd(int fd, int mask) {
+void unit::addFd(int fd, eventType event) {
 
-  m_epoll.addFd(fd, mask);
-
+  switch(event) {
+    case eventType::EREAD:
+      m_epoll.addFd(fd, EPOLLIN);
+      break;
+    case eventType::EWRITE:
+      m_epoll.addFd(fd, EPOLLOUT);
+      break;
+    case eventType::EREWR:
+      m_epoll.addFd(fd, EPOLLIN | EPOLLOUT);
+      break;
+    default:
+      LOG(ERROR) << "Not a valid a event!";
+      //FIXME: add user-defined exceptions
+  }
 }
 
 void unit::delFd(int fd) {
@@ -37,9 +52,22 @@ void unit::delFd(int fd) {
 
 }
 
-void unit::modFd(int fd, int mask) {
+void unit::modFd(int fd, eventType event) {
 
-  m_epoll.modFd(fd, mask);
+  switch(event) {
+    case eventType::EREAD:
+      m_epoll.modFd(fd, EPOLLIN);
+      break;
+    case eventType::EWRITE:
+      m_epoll.modFd(fd, EPOLLOUT);
+      break;
+    case eventType::EREWR:
+      m_epoll.modFd(fd, EPOLLIN | EPOLLOUT);
+      break;
+    default:
+      LOG(ERROR) << "Not a valid a event!";
+      //FIXME: add user-defined exceptions
+  }
 
 }
 

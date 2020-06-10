@@ -3,20 +3,19 @@
 
 #include <thread>
 
+#include "defs.h"
+
 namespace sarab {
 
 namespace utils {
 
 class utils {
 public:
-  std::string getSckLocation()  const { return sckLocation; }
-  std::string getSckNamePre()   const { return sckNamePre;  }
-
   std::string computeSckAddr(std::thread::id id);
+  std::string computeSckAddr(std::string id) const;
 
 private:
-  const std::string sckLocation  = "/tmp/";
-  const std::string sckNamePre   = "sck_";
+  sarab::defs::defs d{};
 };
 
 }

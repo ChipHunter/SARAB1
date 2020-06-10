@@ -4,6 +4,7 @@
 #include "os_socket.h"
 #include "os_epoll.h"
 #include "utils.h"
+#include "defs.h"
 
 namespace sarab {
 
@@ -23,10 +24,10 @@ public:
   void waitForEvents(sarab::os::eventsVect& events);
 
   /* add a new fd to the list of fds to be monitored
-   * @param fd:   the new fd to be added
-   * @param mask: the event mask (e.g. EPOLLIN)
-   * @return:     nothing */
-  void addFd(int fd, int mask);
+   * @param fd:    the new fd to be added
+   * @param event: the event mask (e.g. EREAD)
+   * @return:      nothing */
+  void addFd(int fd, sarab::defs::defs::eventType event);
 
   /* delete an fd from the list of fds to be monitored
    * @param fd: the fd to be deleted
@@ -34,10 +35,10 @@ public:
   void delFd(int fd);
 
   /* modifiy an existing fd in the list of fds to be monitored
-   * @param fd:   the fd to be modified
-   * @param mask: the new event mask (e.g. EPOLLIN)
-   * @return:     nothing */
-  void modFd(int fd, int mask);
+   * @param fd:    the fd to be modified
+   * @param event: the new event (e.g. EREAD)
+   * @return:      nothing */
+  void modFd(int fd, sarab::defs::defs::eventType event);
 
   /*  send a message
    * @param myMsg:    the message to be sent
