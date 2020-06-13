@@ -28,6 +28,11 @@ public:
   OSSocket();
   ~OSSocket();
 
+  OSSocket(const OSSocket&)            = delete;
+  OSSocket(OSSocket&&)                 = default;
+  OSSocket& operator=(const OSSocket&) = delete;
+  OSSocket& operator=(OSSocket&&)      = default;
+
   void send(struct msg* myMsg, std::string targetPath);
   void recv(struct msg* myMsg);
 

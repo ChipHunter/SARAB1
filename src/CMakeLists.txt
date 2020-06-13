@@ -5,8 +5,9 @@ set(EXCUTABLE_NAME sarab1)
 
 # set c/c++ version
 set(CMAKE_C_STANDARD   99)
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 #add thread support
 set(THREADS_PREFER_PTHREAD_FLAG ON)
@@ -46,7 +47,8 @@ file(GLOB SOURCES ${CMAKE_SOURCE_DIR}/plat/os_wrappers/src/*.cpp ${SOURCES})
 file(GLOB SOURCES ${CMAKE_SOURCE_DIR}/plat/utils/src/*.cpp ${SOURCES})
 file(GLOB SOURCES ${CMAKE_SOURCE_DIR}/plat/unit/src/*.cpp ${SOURCES})
 file(GLOB SOURCES ${CMAKE_SOURCE_DIR}/units/sqlparser/src/*.cpp ${SOURCES})
-file(GLOB SOURCES ${CMAKE_SOURCE_DIR}/prod/*.cpp ${SOURCES})
+file(GLOB SOURCES ${CMAKE_SOURCE_DIR}/units/main_unit/src/*.cpp ${SOURCES})
+file(GLOB SOURCES ${CMAKE_SOURCE_DIR}/prod/main_app/src/*.cpp ${SOURCES})
 file(GLOB SOURCES ${CMAKE_SOURCE_DIR}/third/easyloggingpp/src/*.cc ${SOURCES})
 
 target_sources(${EXCUTABLE_NAME} PRIVATE ${SOURCES})
@@ -58,7 +60,9 @@ target_include_directories(${EXCUTABLE_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/plat/I2
 target_include_directories(${EXCUTABLE_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/plat/os_wrappers/include)
 target_include_directories(${EXCUTABLE_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/plat/utils/include)
 target_include_directories(${EXCUTABLE_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/plat/unit/include)
+target_include_directories(${EXCUTABLE_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/prod/main_app/include)
 target_include_directories(${EXCUTABLE_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/units/sqlparser/include)
+target_include_directories(${EXCUTABLE_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/units/main_unit/include)
 target_include_directories(${EXCUTABLE_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/third/sql_parser/src)
 target_include_directories(${EXCUTABLE_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/third/easyloggingpp/src)
 

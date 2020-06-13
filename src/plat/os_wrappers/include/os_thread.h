@@ -8,9 +8,7 @@
 
 namespace sarab {
 
-namespace thread {
-
-using void_f_id = void (*)(std::thread::id);
+namespace os {
 
 class guardedThread {
 public:

@@ -14,11 +14,15 @@ private:
 
 public:
   OSFile(const char* name, int flags);
-  virtual ~OSFile();
+  ~OSFile();
+  OSFile(const OSFile&)            = delete;
+  OSFile(OSFile&&)                 = default;
+  OSFile& operator=(const OSFile&) = delete;
+  OSFile& operator=(OSFile&&)      = default;
 
-  void write(const char* buf, int len) const;
-  void read(char* buf, int len)        const;
-  int  getFd()                         const {return m_fd;};
+  void write(const char* buf, int len) ;
+  void read(char* buf, int len)        ;
+  int  getFd()                         const {return m_fd;}
 
 };
 

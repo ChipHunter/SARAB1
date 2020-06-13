@@ -15,6 +15,7 @@ sarab::unit::unit::unit(std::string parentId) {
 
 }
 
+sarab::unit::unit::~unit() {}
 
 void sarab::unit::unit::waitForEvents(sarab::os::eventsVect& events) {
 
@@ -69,14 +70,10 @@ void sarab::unit::unit::sendMsg(struct msg* myMsg, std::string destAddr) {
 
   if (!destAddr.empty()) {
 
-    /* in case we are in the parent thread we need to know to which child
-       we are sending */
     m_uSck.send(myMsg, destAddr);
 
   } else {
 
-    /* in case we are in a child thread, we send and receive only from
-       the only parent */
     m_uSck.send(myMsg, m_parentAddr);
 
   }

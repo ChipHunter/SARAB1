@@ -16,6 +16,11 @@ public:
   OSEpoll();
   ~OSEpoll();
 
+  OSEpoll(const OSEpoll&)            = delete;
+  OSEpoll(OSEpoll&&)                 = default;
+  OSEpoll& operator=(const OSEpoll&) = delete;
+  OSEpoll& operator=(OSEpoll&&)      = default;
+
   void addFd(int fd, int eventMask);
   void delFd(int fd);
   void modFd(int fd, int eventMask);

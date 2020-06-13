@@ -16,7 +16,12 @@ namespace unit {
 class unit {
 public:
   unit(std::string parentId = "");
-  virtual ~unit() {};
+  virtual ~unit() = 0;
+
+  unit(const unit&)             = default;
+  unit(unit&&)                  = default;
+  unit& operator=(const unit&)  = default;
+  unit& operator=(unit&&)       = default;
 
   /* block waiting for events to appear and update "events" accordingly
    * @param events: a vector to fill with the occured events
@@ -42,7 +47,7 @@ public:
 
   /*  send a message
    * @param myMsg:    the message to be sent
-   * @param destAddr: destination address
+   * @param destAddr: destination address. if empty, we send automatically to parent
    * @return:         nothing*/
   void sendMsg(struct msg* myMsg, std::string destAddr = "");
 

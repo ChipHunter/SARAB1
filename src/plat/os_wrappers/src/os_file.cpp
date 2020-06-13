@@ -5,9 +5,8 @@
 #include "os_file.h"
 #include "easylogging++.h"
 
-using sarab::os::OSFile;
 
-OSFile::OSFile(const char* name, int flags) {
+sarab::os::OSFile::OSFile(const char* name, int flags) {
 
   if((m_fd = open(name, flags)) == -1){
     LOG(ERROR) << "Can't open the file: " << strerror(errno);
@@ -16,7 +15,7 @@ OSFile::OSFile(const char* name, int flags) {
 
 }
 
-OSFile::~OSFile() {
+sarab::os::OSFile::~OSFile() {
 
   if (close(m_fd) == -1) {
     LOG(ERROR) << "Can't close the file: " << strerror(errno);
@@ -24,7 +23,7 @@ OSFile::~OSFile() {
 
 }
 
-void OSFile::write(const char* buf, int len) const {
+void sarab::os::OSFile::write(const char* buf, int len) {
 
   if(::write(m_fd, buf, len) != len){
     if (errno) {
@@ -37,7 +36,7 @@ void OSFile::write(const char* buf, int len) const {
 
 }
 
-void OSFile::read(char* buf, int len) const {
+void sarab::os::OSFile::read(char* buf, int len) {
 
   if(::read(m_fd, buf, len) != len){
     if (errno) {
