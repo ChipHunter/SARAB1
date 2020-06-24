@@ -23,17 +23,21 @@ void sarab::mainapp::mainApp::run() {
   sarab::utils::utils ut{};
 
   sarab::os::eventsVect events;
-  struct msg myMsg;
+  //struct msg myMsg;
   std::unique_ptr<sarab::unit::unit> u(new sarab::mainu::mainUnit{""});
   std::this_thread::sleep_for(std::chrono::seconds(1));
-  u->sendMsg(&myMsg, ut.computeSckAddr(ut.threadIdToString(sqlpT.getThreadId())) );
+  LOG(ERROR) << "waiting for events in main";
+  u->waitForEvents(events);
+  LOG(ERROR) << "ending the program";
+
+  /*  u->sendMsg(&myMsg, ut.computeSckAddr(ut.threadIdToString(sqlpT.getThreadId())) );
 
   for(int i = 0; i < 3; i++) {
     std::this_thread::sleep_for(std::chrono::seconds(1));
     u->waitForEvents(events);
     u->sendMsg(&myMsg, ut.computeSckAddr(ut.threadIdToString(sqlpT.getThreadId())) );
     std::cout << "Mar7abn!" << std::endl;
-  }
+  }*/
 }
 
 

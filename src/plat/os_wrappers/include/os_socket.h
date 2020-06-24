@@ -6,6 +6,9 @@
 #include <iostream>
 #include <vector>
 #include <sys/un.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
 
 #include "utils.h"
 
@@ -46,6 +49,59 @@ private:
   sarab::utils::utils m_utils;
 };
 
+class SOSSocket {
+
+  using sockAddrUn = struct sockaddr_un;
+
+public:
+  SOSSocket();
+  ~SOSSocket();
+
+  SOSSocket(const SOSSocket&)            = delete;
+  SOSSocket(SOSSocket&&)                 = default;
+  SOSSocket& operator=(const SOSSocket&) = delete;
+  SOSSocket& operator=(SOSSocket&&)      = default;
+
+  void send(struct msg* myMsg, std::string targetPath);
+  void recv(struct msg* myMsg);
+  int acceptCon();
+
+  int          getFd()   const { return m_fd; }
+  std::string  getAddr() const { return m_sckAddr; }
+
+private:
+  int                 m_fd;
+  std::string         m_sckAddr;
+  sockAddrUn          m_targetAddr;
+  sarab::utils::utils m_utils;
+};
+
+class TCPSocket {
+
+  using sockAddrIn = struct sockaddr_in;
+  using sockIpAddr = struct in_addr;
+  using SA         = struct sockaddr;
+
+public:
+  TCPSocket();
+  ~TCPSocket();
+
+  TCPSocket(const TCPSocket&)            = delete;
+  TCPSocket(TCPSocket&&)                 = default;
+  TCPSocket& operator=(const TCPSocket&) = delete;
+  TCPSocket& operator=(TCPSocket&&)      = default;
+
+  void send(struct msg* myMsg, std::string targetPath);
+  void recv(struct msg* myMsg);
+  int acceptCon();
+
+  int          getFd()   const { return m_fd; }
+  std::string  getAddr() const { return "";}
+
+private:
+  int                 m_fd;
+  sarab::utils::utils m_utils;
+};
 }
 
 }

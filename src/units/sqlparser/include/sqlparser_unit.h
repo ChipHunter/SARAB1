@@ -21,13 +21,15 @@ private:
 
 class sqlpUnit : public sarab::unit::unit {
 public:
-  sqlpUnit(std::string parentId) : sarab::unit::unit(parentId) {}
+  sqlpUnit(std::string parentId);
 
   ~sqlpUnit()                           = default;
   sqlpUnit(const sqlpUnit&)             = default;
   sqlpUnit(sqlpUnit&&)                  = default;
   sqlpUnit& operator=(const sqlpUnit&)  = default;
   sqlpUnit& operator=(sqlpUnit&&)       = default;
+private:
+  sarab::os::TCPSocket tcpSck{};
 };
 
 }
