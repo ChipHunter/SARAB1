@@ -26,18 +26,8 @@ ExternalProject_Add(sqlparser
   INSTALL_COMMAND   make -C <SOURCE_DIR> install
 )
 
-ExternalProject_Add(easyloggingpp
-  GIT_REPOSITORY    https://github.com/amrayn/easyloggingpp.git
-  SOURCE_DIR        ${CMAKE_SOURCE_DIR}/third/easyloggingpp
-  PATCH_COMMAND     ""
-  CONFIGURE_COMMAND ""
-  BUILD_COMMAND     ""
-  INSTALL_COMMAND   ""
-)
-
 # define dependencies
 add_dependencies(${EXCUTABLE_NAME} sqlparser)
-add_dependencies(${EXCUTABLE_NAME} easyloggingpp)
 
 # add source files
 file(GLOB SOURCES ${CMAKE_SOURCE_DIR}/plat/GPIO/src/*.cpp ${SOURCES})
