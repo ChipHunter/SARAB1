@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 3.7.2)
-project (SARAB1)
+project (SARAB1 CXX)
 
-set(EXCUTABLE_NAME sarab1)
+set(EXCUTABLE_NAME $ENV{EXE_NAME})
 
 # set c/c++ version
 set(CMAKE_C_STANDARD   99)
@@ -16,18 +16,18 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 add_executable(${EXCUTABLE_NAME})
 
 # add external projects
-include(ExternalProject)
-ExternalProject_Add(sqlparser
-  GIT_REPOSITORY    https://github.com/hyrise/sql-parser
-  SOURCE_DIR        ${CMAKE_SOURCE_DIR}/third/sql_parser
-  PATCH_COMMAND     patch --forward -d <SOURCE_DIR> -p1 < ${CMAKE_SOURCE_DIR}/../patches/sqlparser.patch
-  CONFIGURE_COMMAND ""
-  BUILD_COMMAND     make CXX=${CMAKE_CXX_COMPILER} -C <SOURCE_DIR>
-  INSTALL_COMMAND   make -C <SOURCE_DIR> install
-)
+#include(ExternalProject)
+#ExternalProject_Add(sqlparser
+#  GIT_REPOSITORY    https://github.com/hyrise/sql-parser
+#  SOURCE_DIR        ${CMAKE_SOURCE_DIR}/third/sql_parser
+#  PATCH_COMMAND     patch --forward -d <SOURCE_DIR> -p1 < ${CMAKE_SOURCE_DIR}/../patches/sqlparser.patch
+#  CONFIGURE_COMMAND ""
+#  BUILD_COMMAND     make CXX=${CMAKE_CXX_COMPILER} -C <SOURCE_DIR>
+#  INSTALL_COMMAND   make -C <SOURCE_DIR> install
+#)
 
 # define dependencies
-add_dependencies(${EXCUTABLE_NAME} sqlparser)
+#add_dependencies(${EXCUTABLE_NAME} sqlparser)
 
 # add source files
 file(GLOB SOURCES ${CMAKE_SOURCE_DIR}/plat/GPIO/src/*.cpp ${SOURCES})
