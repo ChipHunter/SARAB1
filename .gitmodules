@@ -4,3 +4,6 @@
 [submodule "src/third/sqlparser"]
 	path = src/third/sqlparser
 	url = https://github.com/hyrise/sql-parser
+[submodule "/home/ammar/devl/SARAB1/src/third/librta"]
+	path = /home/ammar/devl/SARAB1/src/third/librta
+	url = https://github.com/librta/librta.git
