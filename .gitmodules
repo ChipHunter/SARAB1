@@ -2,5 +2,5 @@
 	path = src/third/easyloggingpp
 	url = https://github.com/amrayn/easyloggingpp.git
 [submodule "/home/ammar/devl/SARAB1/src/third/librta"]
-	path = /home/ammar/devl/SARAB1/src/third/librta
+	path = src/third/librta
 	url = https://github.com/librta/librta.git
