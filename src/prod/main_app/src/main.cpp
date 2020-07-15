@@ -1,10 +1,4 @@
 #include "easylogging++.h"
-#include <thread>
-#include <sstream>
-#include <chrono>
-#include "unit.h"
-#include "sqlparser_unit.h"
-#include "main_unit.h"
 #include "main_app.h"
 
 // initialize easyloggingpp

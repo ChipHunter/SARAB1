@@ -45,7 +45,8 @@ target_include_directories(${EXCUTABLE_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/third/e
 target_include_directories(${EXCUTABLE_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/third/librta/src)
 
 # add compiler options
-target_compile_options(${EXCUTABLE_NAME} PRIVATE -Wall -Werror -Wno-long-long -pedantic)
+#target_compile_options(${EXCUTABLE_NAME} PRIVATE -Wall -Werror -Wno-long-long -pedantic)
+target_compile_options(${EXCUTABLE_NAME} PRIVATE -Wall -Wno-long-long -pedantic -fpermissive)
 
 # find required libs and pkgs
 find_package(Threads REQUIRED)

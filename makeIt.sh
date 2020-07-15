@@ -4,7 +4,7 @@ init() {
 
   echo "############### INITIALIZATION ###############"
   # mount the target using nfs
-  sudo mount -t nfs 192.168.1.107:/ /media/nfs
+  #sudo mount -t nfs 192.168.1.107:/ /media/nfs
   # define some env variables 
   export CXX=/usr/bin/arm-linux-gnueabihf-g++
   export CC=/usr/bin/arm-linux-gnueabihf-gcc
@@ -47,6 +47,7 @@ build_main() {
   cd ${BUILD_DIR}
   cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchain.cmake ../src
   cmake -G "Unix Makefiles" ../src
+  cmake -DCMAKE_BUILD_TYPE=Debug ../src
   cmake --build . --config Debug --target all
   echo "############### COPYING EXEs ################"
   if [ $? -eq 0 ]; then

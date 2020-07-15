@@ -17,18 +17,19 @@ void sarab::mainapp::mainApp::init() {
 
 void sarab::mainapp::mainApp::run() {
 
+  std::unique_ptr<sarab::sqlp::sqlpUnit> u(new sarab::sqlp::sqlpUnit{""});
+  u->run();
   // starting threads
-  sarab::sqlp::sqlpFuncObj sqlpF{std::this_thread::get_id()};
-  sarab::os::guardedThread sqlpT{sqlpF};
-  sarab::utils::utils ut{};
-
-  sarab::os::eventsVect events;
+  //sarab::sqlp::sqlpFuncObj sqlpF{std::this_thread::get_id()};
+  //sarab::os::guardedThread sqlpT{sqlpF};
+//  sarab::utils::utils ut{};
+//  sarab::os::eventsVect events;
   //struct msg myMsg;
-  std::unique_ptr<sarab::unit::unit> u(new sarab::mainu::mainUnit{""});
-  std::this_thread::sleep_for(std::chrono::seconds(1));
-  LOG(ERROR) << "waiting for events in main";
-  u->waitForEvents(events);
-  LOG(ERROR) << "ending the program";
+//  std::unique_ptr<sarab::unit::unit> u(new sarab::mainu::mainUnit{""});
+//  std::this_thread::sleep_for(std::chrono::seconds(1));
+//  LOG(ERROR) << "waiting for events in main";
+//  u->waitForEvents(events);
+//  LOG(ERROR) << "ending the program";
 
   /*  u->sendMsg(&myMsg, ut.computeSckAddr(ut.threadIdToString(sqlpT.getThreadId())) );
 
