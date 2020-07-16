@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <thread>
+#include <fcntl.h>
 
 #include "os_socket.h"
 #include "easylogging++.h"
@@ -160,10 +161,11 @@ int sarab::os::SOSSocket::acceptCon() {
 
 }
 ////////////////////////////
-sarab::os::TCPSocket::TCPSocket() {
+sarab::os::TCPSocket::TCPSocket(int port) {
 
   sockAddrIn addr;
 
+  m_port  = port;
   //m_sckAddr = m_utils.computeSckAddr(std::this_thread::get_id()) + "_stream";
 
   m_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -175,7 +177,14 @@ sarab::os::TCPSocket::TCPSocket() {
   memset(&addr, 0, sizeof(struct sockaddr_in));
   addr.sin_family = AF_INET;
   addr.sin_addr.s_addr = inet_addr("127.0.0.1");
-  addr.sin_port = htons(5432);
+  addr.sin_port = htons(port);
+
+  int flags = fcntl(m_fd, F_GETFL, 0);
+  flags |= O_NONBLOCK;
+  if (fcntl(m_fd, F_SETFL, flags) == -1) {
+    LOG(ERROR) << "Can't set flags using fcntl" << strerror(errno);
+    throw std::system_error(errno, std::generic_category());
+  }
 
   if(bind(m_fd, (SA*) &addr, sizeof(struct sockaddr_in)) == -1) {
     LOG(ERROR) << "Can't bind the socket " << strerror(errno);

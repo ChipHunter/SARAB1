@@ -14,10 +14,10 @@
 #include "easylogging++.h"
 
 using eventType = sarab::defs::defs::defs::eventType;
+using ui        = sarab::sqlp::ui;
 
-MyData mydata[5];
-/* struct ui* ConnHead;  /1* head of linked list of UI conns *1/ */
-/* int nui = 0;   /1* number of open UI connections *1/ */
+sarab::sqlp::MyData mydata[5];
+
 /***************************************************************
  *   Here is the sample application column definitions.
  **************************************************************/
@@ -27,48 +27,17 @@ RTA_COLDEF   mycolumns[] = {
   "myint",                  /* the column name */
   RTA_INT,                  /* it is an integer */
   sizeof(int),              /* number of bytes */
-  offsetof(struct MyData, myint), /* location in struct */
+  offsetof(struct sarab::sqlp::MyData, myint), /* location in struct */
   RTA_DISKSAVE,             /* save to disk */
   (int (*)()) 0,            /* called before read */
   (int (*)()) 0,            /* called after write */
 "A sample integer in a table"},
-{
-  "mytable",                /* the table name */
-  "myfloat",                /* the column name */
-  RTA_FLOAT,                /* it is a float */
-  sizeof(float),            /* number of bytes */
-  offsetof(struct MyData, myfloat), /* location in struct */
-  0,                        /* no flags */
-  (int (*)()) 0,            /* called before read */
-  (int (*)()) 0,            /* called after write */
-"A sample float in a table"},
-{
-  "mytable",                /* the table name */
-  "notes",                  /* the column name */
-  RTA_STR,                  /* it is a string */
-  NOTE_LEN,                 /* number of bytes */
-  offsetof(struct MyData, notes), /* location in struct */
-  RTA_DISKSAVE,             /* save to disk */
-  (int (*)()) 0,            /* called before read */
-  reverse_str,              /* called after write */
-"A sample note string in a table"},
-{
-  "mytable",                /* the table name */
-  "seton",                  /* the column name */
-  RTA_STR,                  /* it is a string */
-  NOTE_LEN,                 /* number of bytes */
-  offsetof(struct MyData, seton), /* location in struct */
-  RTA_READONLY,             /* a read-only column */
-  (int (*)()) 0,            /* called before read */
-  (int (*)()) 0,            /* called after write */
-"Sample of a field computed by a write callback.  Seton"
-  " is the reverse of the 'notes' field."},
 };
 
 RTA_TBLDEF MyTable {
   "mytable",                /* table name */
   mydata,                   /* address of table */
-  sizeof(struct MyData),    /* length of each row */
+  sizeof(struct sarab::sqlp::MyData),    /* length of each row */
   ROW_COUNT,                /* number of rows */
   (void *) NULL,            /* iterator function */
   (void *) NULL,            /* iterator callback data */
@@ -81,72 +50,18 @@ RTA_TBLDEF MyTable {
 "A sample application table"
 };
 
-int reverse_str(char *tbl, char *col, char *sql,
-                    void *pr, int rowid, void *por) {
-
-  int      i, j;       /* loop counters */
-
-  i = strlen(mydata[rowid].notes) - 1; /* -1 to ignore NULL */
-  for (j = 0; i >= 0; i--, j++)
-  {
-    if (mydata[rowid].notes[i] == '<' || mydata[rowid].notes[i] == '>')
-      mydata[rowid].notes[i] = '.';
-    mydata[rowid].seton[j] = mydata[rowid].notes[i];
-  }
-  mydata[rowid].seton[j] = (char) 0;
-
-  if (mydata[rowid].myint == 999)
-    return(1);
-  return(0);
-
-}
-
 sarab::sqlp::sqlpUnit::sqlpUnit(std::string parentId) : sarab::unit::unit(parentId) {
 
   //addFd(tcpSck.getFd(), eventType::EREAD);
 
 }
 
-int sarab::sqlp::sqlpUnit::listen_on_port(int port) {
-
-  int      srvfd;      /* FD for our listen server socket */
-  struct sockaddr_in srvskt;
-  int      adrlen;
-  int      flags;
-
-  adrlen = sizeof(struct sockaddr_in);
-  (void) memset((void *) &srvskt, 0, (size_t) adrlen);
-  srvskt.sin_family = AF_INET;
-  srvskt.sin_addr.s_addr = INADDR_ANY;
-  srvskt.sin_port = htons(port);
-  if ((srvfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-  {
-    fprintf(stderr, "Unable to get socket for port %d.", port);
-    exit(1);
-  }
-  flags = fcntl(srvfd, F_GETFL, 0);
-  flags |= O_NONBLOCK;
-  (void) fcntl(srvfd, F_SETFL, flags);
-  if (bind(srvfd, (struct sockaddr *) &srvskt, adrlen) < 0)
-  {
-    fprintf(stderr, "Unable to bind to port %d\n", port);
-    exit(1);
-  }
-  if (listen(srvfd, 1) < 0)
-  {
-    fprintf(stderr, "Unable to listen on port %d\n", port);
-    exit(1);
-  }
-  return (srvfd);
-
-}
-
-void sarab::sqlp::sqlpUnit::handle_ui_output(struct ui *pui) {
+void sarab::sqlp::sqlpUnit::handle_ui_output(ui* pui) {
   int      ret;        /* write() return value */
 
-  if (pui->rspfree < MXRSP)
+  if (pui->rspfree < ui::maxRsp)
   {
-    ret = write(pui->fd, pui->rsp, (MXRSP - pui->rspfree));
+    ret = write(pui->fd, pui->rsp, (ui::maxRsp - pui->rspfree));
     if (ret < 0)
     {
       /* log a failure to talk to a DB/UI connection */
@@ -159,38 +74,25 @@ void sarab::sqlp::sqlpUnit::handle_ui_output(struct ui *pui) {
       };
       auto i = std::find_if(std::begin(connVect), std::end(connVect), pred);
       connVect.erase(i);
-      /* Free the UI struct */
-      /*if (pui->prevconn) {
-        (pui->prevconn)->nextconn = pui->nextconn;
-        std::cout << "dsdsds" << std::endl;
-      } else {
-        ConnHead = pui->nextconn;
-        std::cout << "ConnHead changed" << std::endl;
-      }
-      if (pui->nextconn)
-        (pui->nextconn)->prevconn = pui->prevconn;
-      free(pui);
-      nui--;
-      */
       return;
     }
-    else if (ret == (MXRSP - pui->rspfree))
+    else if (ret == (ui::maxRsp - pui->rspfree))
     {
-      pui->rspfree = MXRSP;
+      pui->rspfree = ui::maxRsp;
       pui->nbytout += ret;
     }
     else
     {
       /* we had a partial write.  Adjust the buffer */
       (void) memmove(pui->rsp, &(pui->rsp[ret]),
-        (MXRSP - pui->rspfree - ret));
+        (ui::maxRsp - pui->rspfree - ret));
       pui->rspfree += ret;
       pui->nbytout += ret;  /* # bytes sent on conn */
     }
   }
 }
 
-void sarab::sqlp::sqlpUnit::handle_ui_request(struct ui *pui) {
+void sarab::sqlp::sqlpUnit::handle_ui_request(ui* pui) {
   int      ret;        /* a return value */
   int      dbstat;     /* a return value */
   int      t;          /* a temp int */
@@ -198,7 +100,7 @@ void sarab::sqlp::sqlpUnit::handle_ui_request(struct ui *pui) {
   /* We read data from the connection into the buffer in the ui struct.
      Once we've read all of the data we can, we call the DB routine to
      parse out the SQL command and to execute it. */
-  ret = read(pui->fd, &(pui->cmd[pui->cmdindx]), (MXCMD - pui->cmdindx));
+  ret = read(pui->fd, &(pui->cmd[pui->cmdindx]), (ui::maxCmd - pui->cmdindx));
 
   pui->cmdindx += ret;
   pui->nbytin += ret;
@@ -210,7 +112,7 @@ void sarab::sqlp::sqlpUnit::handle_ui_request(struct ui *pui) {
     t = pui->cmdindx;                        /* packet in length */
     dbstat = rta_dbcommand(pui->cmd,         /* packet in */
       &(pui->cmdindx),                       /* packet in length */
-      &(pui->rsp[MXRSP - pui->rspfree]),     /* ptr to out buf */
+      &(pui->rsp[ui::maxRsp - pui->rspfree]),     /* ptr to out buf */
       &(pui->rspfree));                      /* N bytes at out */
     t -= pui->cmdindx;                       /* t = # bytes consumed */
     /* move any trailing SQL cmd text up in the buffer */
@@ -221,79 +123,39 @@ void sarab::sqlp::sqlpUnit::handle_ui_request(struct ui *pui) {
   handle_ui_output(pui);
 }
 
-void sarab::sqlp::sqlpUnit::accept_ui_session(int srvfd) {
+void sarab::sqlp::sqlpUnit::accept_ui_session() {
 
   int      newuifd;    /* New UI FD */
-  u_int    adrlen;     /* length of an inet socket address */
   struct sockaddr_in cliskt; /* socket to the UI/DB client */
   int      flags;      /* helps set non-blocking IO */
   struct ui newUi;       /* pointer to the new UI struct */
- // struct ui      *pui;        /* pointer to a UI struct */
 
 
   /* Accept the connection */
-  adrlen = sizeof(struct sockaddr_in);
-  newuifd = accept(srvfd, (struct sockaddr *) &cliskt, &adrlen);
-  if (newuifd < 0) {
-    syslog(LOG_ERR, "Manager accept() error");
-    return;
-  }
+  // FIXME: we should return a new TCPSocket instead of fd!!
+  newuifd = tcpSck.acceptCon();
 
   /* We've accepted the connection.  Now get a UI structure.
      Are we at our limit?  If so, drop the oldest conn. */
-  if (connVect.size() >= MX_UI)
+  if (connVect.size() >= ui::maxUi)
   {
     LOG(WARNING) << "no manager connections";
-
-    /* oldest conn is one at head of linked list.  Close it and
-       promote next oldest to the top of the linked list.  */
     close(connVect[0].fd);
-    //pui = ConnHead->nextconn;
-    //free(ConnHead);
-    //nui--;
-    //ConnHead = pui;
-    //ConnHead->prevconn = (struct ui *) NULL;
     connVect.erase(connVect.begin());
   }
 
-  //pnew = malloc(sizeof (struct ui));
-  //if (pnew == (struct ui *) NULL)
-  //{
-    /* Unable to allocate memory for new connection.  Log it,
-       then drop new connection.  Try to go on.... */
-    //syslog(LOG_ERR, "Unable to allocate memory");
-    //close(newuifd);
-    //return;
-  //}
-  //nui++;       /* increment number of UI structs alloc'ed */
-
-  /* OK, we've got the UI struct, now add it to end of list */
- /* if (ConnHead == (struct ui *) NULL)
-  {
-    std::cout << "Hallo!" << pnew << std::endl;
-    ConnHead = pnew;
-    pnew->prevconn = (struct ui *) NULL;
-    pnew->nextconn = (struct ui *) NULL;
-  }
-  else
-  {
-    pui = ConnHead;
-    while (pui->nextconn != (struct ui *) NULL)
-      pui = pui->nextconn;
-    pui->nextconn = pnew;
-    pnew->prevconn = pui;
-    pnew->nextconn = (struct ui *) NULL;
-  }
-*/
-  /* UI struct is now at end of list.  Fill it in.  */
+  /* Fill UI struct in.  */
   newUi.fd = newuifd;
   flags = fcntl(newUi.fd, F_GETFL, 0);
   flags |= O_NONBLOCK;
-  (void) fcntl(newUi.fd, F_SETFL, flags);
+  if (fcntl(newUi.fd, F_SETFL, flags) == -1) {
+    LOG(ERROR) << "Can't set flags using fcntl" << strerror(errno);
+    throw std::system_error(errno, std::generic_category());
+  }
   newUi.o_ip = (int) cliskt.sin_addr.s_addr;
   newUi.o_port = (int) ntohs(cliskt.sin_port);
   newUi.cmdindx = 0;
-  newUi.rspfree = MXRSP;
+  newUi.rspfree = ui::maxRsp;
   newUi.ctm = (int) time((time_t *) 0);
   newUi.nbytin = 0;
   newUi.nbytout = 0;
@@ -303,18 +165,12 @@ void sarab::sqlp::sqlpUnit::accept_ui_session(int srvfd) {
 
 int sarab::sqlp::sqlpUnit::run()
 {
-  fd_set   rfds;       /* read bit masks for select statement */
-  fd_set   wfds;       /* write bit masks for select statement */
-  int      mxfd;       /* Maximum FD for the select statement */
-  int      newui_fd = -1; /* FD to TCP socket accept UI conns */
-  int      i;          /* generic loop counter */
-  struct ui      *pui;        /* pointer to a UI struct */
-  struct ui      *nextpui;    /* points to next UI in list */
-
-
-
-  /* Init */
-  /* ConnHead = (struct ui *) NULL; */
+  fd_set rfds;       /* read bit masks for select statement */
+  fd_set wfds;       /* write bit masks for select statement */
+  int    mxfd;       /* Maximum FD for the select statement */
+  int    newui_fd = tcpSck.getFd(); /* FD to TCP socket accept UI conns */
+  ui*    pui;        /* pointer to a UI struct */
+  ui*    nextpui;    /* points to next UI in list */
 
   rta_add_table(&MyTable);
 
@@ -328,19 +184,13 @@ int sarab::sqlp::sqlpUnit::run()
     FD_ZERO(&wfds);
     mxfd = 0;
 
-    /* open UI/DB/manager listener if needed */
-    if (newui_fd < 0)
-    {
-      newui_fd = listen_on_port(DB_PORT);
-    }
     FD_SET(newui_fd, &rfds);
     mxfd = (newui_fd > mxfd) ? newui_fd : mxfd;
 
     /* for each UI conn .... */
-    /* pui = ConnHead; */
     for(auto i : connVect)
     {
-      if (i.rspfree < MXRSP) /* Data to send? */
+      if (i.rspfree < ui::maxRsp) /* Data to send? */
       {
         FD_SET(i.fd, &wfds);
         mxfd = (i.fd > mxfd) ? i.fd : mxfd;
@@ -350,10 +200,10 @@ int sarab::sqlp::sqlpUnit::run()
         FD_SET(i.fd, &rfds);
         mxfd = (i.fd > mxfd) ? i.fd : mxfd;
       }
-      /* pui = pui->nextconn; */
     }
 
     /* Wait for some something to do */
+    // FIXME: replace select with Epoll
     (void) select(mxfd + 1, &rfds, &wfds,
       (fd_set *) 0, (struct timeval *) 0);
 
@@ -363,15 +213,13 @@ int sarab::sqlp::sqlpUnit::run()
     /* Handle new UI/DB/manager connection requests */
     if ((newui_fd >= 0) && (FD_ISSET(newui_fd, &rfds)))
     {
-      accept_ui_session(newui_fd);
+      accept_ui_session();
     }
 
     /* process request from or data to one of the UI programs */
     /* pui = ConnHead; */
     for (auto i : connVect)
     {
-      /* Get next UI now since pui struct may be freed in handle_ui.. */
-      /* nextpui = pui->nextconn; */
       if (FD_ISSET(i.fd, &rfds))
       {
         handle_ui_request(&i);

@@ -83,7 +83,7 @@ class TCPSocket {
   using SA         = struct sockaddr;
 
 public:
-  TCPSocket();
+  TCPSocket(int port);
   ~TCPSocket();
 
   TCPSocket(const TCPSocket&)            = delete;
@@ -100,6 +100,7 @@ public:
 
 private:
   int                 m_fd;
+  int                 m_port;
   sarab::utils::utils m_utils;
 };
 }
