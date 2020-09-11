@@ -4,3 +4,6 @@
 [submodule "src/third/curlpp"]
 	path = src/third/curlpp
 	url = https://github.com/jpbarrette/curlpp
+[submodule "src/third/librta"]
+	path = src/third/librta
+	url = https://github.com/librta/librta.git
