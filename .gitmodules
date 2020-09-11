@@ -4,3 +4,6 @@
 [submodule "/home/ammar/devl/SARAB1/src/third/librta"]
 	path = src/third/librta
 	url = https://github.com/librta/librta.git
+[submodule "src/third/curlpp"]
+	path = src/third/curlpp
+	url = https://github.com/jpbarrette/curlpp
