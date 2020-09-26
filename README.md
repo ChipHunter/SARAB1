@@ -1,4 +1,2 @@
 # SARAB
-yet another home automation system ..
-
-Still in early stages... Documentaions will follow soon ..
+Embedded Software platform that provides OS, system and HW abstraction services. The project is still in early stages ..
